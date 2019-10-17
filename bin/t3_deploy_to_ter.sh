@@ -7,25 +7,23 @@ phpenv config-rm xdebug.ini
 THIS_SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 cd "$THIS_SCRIPT_DIR" || exit 1
 
-extensionKey="$1"
-
-if [[ -z "${extensionKey} " ]]; then
-    echo "Extension name missing!"
+if [[ -z "${TYPO3_EXTENSION_KEY}" ]]; then
+    echo "TYPO3_EXTENSION_KEY environment variable must be defined before running this script!"
     exit 1
 fi
 
-if [[ -z "$TRAVIS_TAG" ]]; then
+if [[ -z "${TRAVIS_TAG}" ]]; then
     echo "No Travis tag is available. Upload only runs for new tags."
     exit 0
 fi
 
-if [[ -z "$TYPO3_ORG_USERNAME" ]]; then
-    echo "The $TYPO3_ORG_USERNAME env var is not set."
+if [[ -z "${TYPO3_ORG_USERNAME}" ]]; then
+    echo "The TYPO3_ORG_USERNAME env var is not set."
     exit 1
 fi
 
-if [[ -z "$TYPO3_ORG_PASSWORD" ]]; then
-    echo "The $TYPO3_ORG_PASSWORD env var is not set."
+if [[ -z "${TYPO3_ORG_PASSWORD}" ]]; then
+    echo "The TYPO3_ORG_PASSWORD env var is not set."
     exit 1
 fi
 
@@ -61,18 +59,18 @@ assertVersionNumberInFile Documentation/Settings.cfg
 
 cd ..
 
-if [[ "${buildDirectoryName}" != "${extensionKey}" ]]; then
+if [[ "${buildDirectoryName}" != "${TYPO3_EXTENSION_KEY}" ]]; then
     echo "Renaming repository folder to match extension key..."
-    mv "${buildDirectoryName}" "${extensionKey}"
+    mv "${buildDirectoryName}" "${TYPO3_EXTENSION_KEY}"
 fi
 
 echo "Installing TYPO3 repository client..."
 composer create-project --no-dev namelesscoder/typo3-repository-client typo3-repository-client
 
-cd ${extensionKey}
+cd ${TYPO3_EXTENSION_KEY}
 
 echo "Setting version to ${TRAVIS_TAG#"v"}"
 ../typo3-repository-client/bin/setversion ${TRAVIS_TAG#"v"}
 
 echo "Uploading release ${TRAVIS_TAG} to TER"
-../typo3-repository-client/bin/upload . "$TYPO3_ORG_USERNAME" "$TYPO3_ORG_PASSWORD" "$tagMessage"
+../typo3-repository-client/bin/upload . "${TYPO3_ORG_USERNAME}" "${TYPO3_ORG_PASSWORD}" "${tagMessage}"
