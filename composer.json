@@ -1,0 +1,12 @@
+{
+	"name": "de-swebhosting/typo3-extension-buildtools",
+	"type": "library",
+	"description": "Contains scripts to test and release TYPO3 Extensions",
+	"license": "GPL-3.0-or-later",
+	"bin": [
+		"bin/t3_check_codestyle.sh",
+		"bin/t3_deploy_to_ter.sh",
+		"bin/t3_prepare_release.sh",
+		"bin/t3_run_tests.sh"
+	]
+}
