@@ -8,5 +8,11 @@
 		"bin/t3_deploy_to_ter.sh",
 		"bin/t3_prepare_release.sh",
 		"bin/t3_run_tests.sh"
-	]
+	],
+	"require": {
+		"squizlabs/php_codesniffer": "^3.1",
+		"de-swebhosting/php-codestyle": "dev-master",
+		"codeception/codeception": "^2.5.4 || ^3",
+		"typo3/testing-framework": "~5.0.14"
+	}
 }
