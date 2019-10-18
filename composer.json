@@ -11,7 +11,7 @@
 	],
 	"require": {
 		"squizlabs/php_codesniffer": "^3.1",
-		"de-swebhosting/php-codestyle": "dev-master",
+		"de-swebhosting/php-codestyle": "^1.0",
 		"codeception/codeception": "^2.5.4 || ^3",
 		"typo3/testing-framework": "~5.0.14"
 	}
