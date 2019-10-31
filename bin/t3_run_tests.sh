@@ -27,7 +27,8 @@ setUpDockerComposeDotEnv() {
     # Your local user
     echo "ROOT_DIR"=${ROOT_DIR} >> .env
     echo "HOST_USER=${USER}" >> .env
-    echo "TEST_FILE=${TEST_FILE}" >> .env
+    echo "TEST_FILE=${ACC}" >> .env
+    echo "ACCEPTANCE_TEST_SUITE=${ACCEPTANCE_TEST_SUITE}" >> .env
     echo "PHP_XDEBUG_ON=${PHP_XDEBUG_ON}" >> .env
     echo "PHP_XDEBUG_PORT=${PHP_XDEBUG_PORT}" >> .env
     echo "DOCKER_PHP_IMAGE=${DOCKER_PHP_IMAGE}" >> .env
@@ -76,6 +77,11 @@ Options:
         tests). For phpunit, options starting with "--" must be added after options starting with "-".
         Example -e "-v --filter canRetrieveValueWithGP" to enable verbose output AND filter tests
         named "canRetrieveValueWithGP"
+
+    -a "<acceptance test suite>"
+        Only with -s acceptance
+        Default test suite is "Backend"
+        Use this argument to run a different test suite.
 
     -x
         Only with -s functional|unit
@@ -137,6 +143,7 @@ cd ../vendor/de-swebhosting/typo3-extension-buildtools/testing-docker || exit 1
 # Option defaults
 ROOT_DIR=`readlink -f ${PWD}/../../../../../`
 TEST_SUITE="unit"
+ACCEPTANCE_TEST_SUITE="Backend"
 DBMS="mariadb"
 PHP_VERSION="7.2"
 PHP_XDEBUG_ON=0
@@ -150,8 +157,11 @@ OPTIND=1
 # Array for invalid options
 INVALID_OPTIONS=();
 # Simple option parsing based on getopts (! not getopt)
-while getopts ":s:d:p:e:xy:huv" OPT; do
+while getopts ":a:s:d:p:e:xy:huv" OPT; do
     case ${OPT} in
+        a)
+            ACCEPTANCE_TEST_SUITE=${OPTARG}
+            ;;
         s)
             TEST_SUITE=${OPTARG}
             ;;
