@@ -1,0 +1,64 @@
+language: php
+
+env:
+  - TYPO3_EXTENSION_KEY=<your_extension_key>
+
+cache:
+  directories:
+    - $HOME/.composer/cache
+    - $HOME/.cache/composer
+
+sudo: true
+
+stages:
+  - test
+  - name: deploy
+    if: tag
+
+before_script:
+  - if [ "$GITHUB_COMPOSER_AUTH" ]; then composer config -g github-oauth.github.com $GITHUB_COMPOSER_AUTH; fi
+  # We can not use the t3_run_tests.sh script here because it is loaded via Composer ;)
+  - composer install
+
+jobs:
+  include:
+    - stage: test
+      name: "Composer validate"
+      php: "7.3"
+      script: bash .Build/bin/t3_run_tests.sh -s composerValidate -p $TRAVIS_PHP_VERSION
+    - name: "PHP code sniffer"
+      php: "7.3"
+      script: bash .Build/bin/t3_check_codestyle.sh [your_custom_codestyle]
+
+    - name: "Unit tests PHP 7.2"
+      php: "7.2"
+      script: bash .Build/bin/t3_run_tests.sh -s unit -p $TRAVIS_PHP_VERSION
+    - name: "Unit tests PHP 7.3"
+      php: "7.3"
+      script: bash .Build/bin/t3_run_tests.sh -s unit -p $TRAVIS_PHP_VERSION
+
+    - name: "Functional tests on MySQL PHP 7.2"
+      php: "7.2"
+      script: bash .Build/bin/t3_run_tests.sh -s functional -p $TRAVIS_PHP_VERSION
+    - name: "Functional tests on MySQL PHP 7.3"
+      php: "7.3"
+      script: bash .Build/bin/t3_run_tests.sh -s functional -p $TRAVIS_PHP_VERSION
+
+    - name: "PHP linting PHP 7.2"
+      php: "7.2"
+      script: bash .Build/bin/t3_run_tests.sh -s lint -p $TRAVIS_PHP_VERSION
+    - name: "PHP linting PHP 7.3"
+      php: "7.3"
+      script: bash .Build/bin/t3_run_tests.sh -s lint -p $TRAVIS_PHP_VERSION
+
+    - name: "Acceptance tests PHP 7.2"
+      php: "7.2"
+      script: bash .Build/bin/t3_run_tests.sh -s acceptance -p $TRAVIS_PHP_VERSION
+    - name: "Acceptance tests PHP 7.3"
+      php: "7.3"
+      script: bash .Build/bin/t3_run_tests.sh -s acceptance -p $TRAVIS_PHP_VERSION
+
+    - stage: deploy
+      name: "Deploy to TER"
+      php: "7.3"
+      script: bash .Build/bin/t3_deploy_to_ter.sh
