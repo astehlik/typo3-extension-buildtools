@@ -80,7 +80,7 @@ services:
         done;
         echo Database is up;
         mkdir -p Web/typo3temp/var/tests/ \
-          && vendor/codeception/codeception/codecept run Backend -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${TEST_FILE}
+          && vendor/codeception/codeception/codecept run ${ACCEPTANCE_TEST_SUITE} -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${TEST_FILE}
       "
 
   composer_install:
