@@ -1,0 +1,8 @@
+page = PAGE
+
+// This is needed to prevent an error in the JS console because the browser
+// tries to download /favicon.ico by default and fails.
+page.shortcutIcon = EXT:my_ext/Tests/Acceptance/Fixtures/favicon.ico
+
+page.10 = TEXT
+page.10.value = Hallo acceptance world!

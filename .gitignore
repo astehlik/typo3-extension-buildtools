@@ -1,1 +1,4 @@
-testing-docker/.env
+/public
+/testing-docker/.env
+/vendor
+/composer.lock
