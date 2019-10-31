@@ -46,10 +46,11 @@ export TYPO3_EXTENSION_KEY="<my_extension_key>"
 
 After that you can run the different commands.
 
-t3_check_codestyle.sh
-t3_deploy_to_ter.sh
-t3_prepare_release.sh
-t3_run_tests.sh
+* `t3_run_tests.sh` - For running Unit, Functional and Acceptance tests
+* `t3_check_codestyle.sh` - For checking / fixing PHP code style via
+  [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer)
+* `t3_prepare_release.sh` - Prepare docs and `ext_emconf.php` for a release
+* `t3_deploy_to_ter.sh` - Upload Extension to TER
 
 ## Run in travis
 
@@ -105,6 +106,27 @@ class MyFirstFunctionalTest extends FunctionalTestCase {
 ...
 }
 ```
+
+## Execute tests
+
+For executing Unit tests, run this command:
+
+```bash
+.Build/bin/t3_run_tests.sh -s unit -p "<PHP version>"
+```
+
+For executing functional tests, run this command:
+
+```bash
+.Build/bin/t3_run_tests.sh -s functional -d "<database type>" -p "<PHP version>"
+```
+
+`<database type>` can be:
+
+* `mariadb`
+* `mssql`
+* `postgres`
+* `sqlite`
 
 ## Acceptance testing
 
@@ -169,6 +191,42 @@ This config needs to be added to the `docker-compose.yml` file:
 ```
 
 ## Code style checking
+
+To execute code style checks, you can use this command:
+
+```bash
+.Build/bin/t3_check_codestyle.sh
+```
+
+It checks all known locations of PHP files in TYPO3 Extensions with some default configuration based on the
+TYPO3 core coding guidelines.
+
+You can adjust the ruleset, by adding `Tests/CodeSniffer/MyCodingStandard/ruleset.xml` to your Extension.
+
+This is an example to use the default rules and disable line length checking for TCA configuration files:
+
+```xml
+<?xml version="1.0"?>
+<ruleset name="MyCodingStandard">
+	<description>Based on PSRDefault. Adjust only if REALLY neccessary!</description>
+	<rule ref="PSRDefault"/>
+	<rule ref="Generic.Files.LineLength">
+		<exclude-pattern>Configuration/TCA/*</exclude-pattern>
+	</rule>
+</ruleset>
+```
+
+After you created the ruleset, you *must* provide its name to the code style checker:
+
+```bash
+.Build/bin/t3_check_codestyle.sh MyCodingStandard
+```
+
+To automatically fix code style errors, you can pass the `fix` keyword as first parameter:
+
+```bash
+.Build/bin/t3_check_codestyle.sh fix [MyCodingStandard]
+```
 
 ## Deploy to TER
 
