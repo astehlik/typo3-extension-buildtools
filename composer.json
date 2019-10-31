@@ -17,7 +17,7 @@
 	},
 	"autoload": {
 		"psr-4": {
-			"De\\SWebhosting\\Buildtools": "src/"
+			"De\\SWebhosting\\Buildtools\\": "src/"
 		}
 	}
 }
