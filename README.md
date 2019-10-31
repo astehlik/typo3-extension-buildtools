@@ -78,7 +78,33 @@ in Travis environment variables for this to work (see [Deploy to TER](#deploy-to
 
 ### Unit test
 
+To write a unit test create the folder `Tests/Unit` in your Extension  and add your first
+test case by extending `TYPO3\TestingFramework\Core\Unit\UnitTestCase`:
+
+```php
+namespace Vendor\MyExt\Tests\Unit;
+
+use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
+
+class MyFirstUnitTest extends UnitTestCase {
+...
+}
+```
+
 ### Functional test
+
+To write a functional test create the folder `Tests/Functional` in your Extension  and add your first functional
+test case by extending `TYPO3\TestingFramework\Core\Functional\FunctionalTestCase`:
+
+```php
+namespace Vendor\MyExt\Tests\Functional;
+
+use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
+
+class MyFirstFunctionalTest extends FunctionalTestCase {
+...
+}
+```
 
 ### Acceptance test
 
