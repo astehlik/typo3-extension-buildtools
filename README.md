@@ -106,7 +106,32 @@ class MyFirstFunctionalTest extends FunctionalTestCase {
 }
 ```
 
-### Acceptance test
+## Acceptance testing
+
+### Debugging
+
+Add these to the config of the `web` service in the `docker-compose.yml` to temporarily
+enable Development context for better debug output in the Frontend and the possibility
+to access the webserver from your local machine
+
+Important! For this to work you need to add the `docker-compose` command in `t3_run_tests.sh`.
+The final command looks like this:
+
+```bash
+docker-compose run --service-ports acceptance_backend_mariadb10
+```
+
+This config needs to be added to the `docker-compose.yml` file:
+
+```yaml
+  web:
+    ...
+    ports:
+      - "8000:8000"
+    ...
+    environment:
+      TYPO3_CONTEXT: Development
+```
 
 ## Code style checking
 
