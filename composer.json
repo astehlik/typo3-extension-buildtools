@@ -14,5 +14,10 @@
 		"de-swebhosting/php-codestyle": "^1.0",
 		"codeception/codeception": "^2.5.4 || ^3",
 		"typo3/testing-framework": "~5.0.14"
+	},
+	"autoload": {
+		"psr-4": {
+			"De\\SWebhosting\\Buildtools": "src/"
+		}
 	}
 }
