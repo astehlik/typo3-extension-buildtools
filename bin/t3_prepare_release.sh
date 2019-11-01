@@ -30,10 +30,10 @@ echo "Adding changed files to git..."
 
 git add ext_emconf.php Documentation/Settings.cfg
 
-git commit -m "[TASK] Release version $version"
+git commit -m "[TASK] Release version $release"
 
-git flow release start ${version}
+git flow release start ${release}
 
-git flow release finish ${version}
+git flow release finish ${release}
 
 echo "Check if everything is OK, then push..."
