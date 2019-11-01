@@ -230,6 +230,21 @@ To automatically fix code style errors, you can pass the `fix` keyword as first 
 
 ## Deploy to TER
 
+Use the `t3_prepare_release.sh` script, to prepare a release:
+
+```bash
+bash .Build/bin/t3_prepare_release.sh "<semantic_version>"
+```
+
+This will set the provided version number in `ext_emconf.php` and `Documentation/Settings.cfg` and create
+a new release using the `git flow release` commands.
+
+After that you can push all branches and tags. The pushed tag will be published to TER.
+
+```bash
+git push && git push --tags && git checkout develop && git push
+```
+
 ## Credits
 
 This work is based on the TYPO3 testing framework and the awesome documentation at
