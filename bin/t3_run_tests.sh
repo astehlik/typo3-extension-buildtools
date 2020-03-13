@@ -27,7 +27,7 @@ setUpDockerComposeDotEnv() {
     # Your local user
     echo "ROOT_DIR"=${ROOT_DIR} >> .env
     echo "HOST_USER=${USER}" >> .env
-    echo "TEST_FILE=${ACC}" >> .env
+    echo "TEST_FILE=${TEST_FILE}" >> .env
     echo "ACCEPTANCE_TEST_SUITE=${ACCEPTANCE_TEST_SUITE}" >> .env
     echo "PHP_XDEBUG_ON=${PHP_XDEBUG_ON}" >> .env
     echo "PHP_XDEBUG_PORT=${PHP_XDEBUG_PORT}" >> .env
