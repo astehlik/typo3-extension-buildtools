@@ -3,14 +3,19 @@ declare(strict_types=1);
 
 namespace De\SWebhosting\Buildtools;
 
+use Composer\Script\Event;
+use TYPO3\TestingFramework\Composer\ExtensionTestEnvironment as TYPO3ExtensionTestEnvironment;
+
 /**
  * This hook creates a vendor symlink in the Web folder because this is where
  * the testing framework is looking for an autoload.php file.
  */
 class ExtensionTestEnvironment
 {
-    public static function prepare()
+    public static function prepare(Event $event)
     {
+        TYPO3ExtensionTestEnvironment::prepare($event);
+
         // We are located at .Build/vendor/de-swebhosting/buildtools/src
         $rootDirectory = realpath(__DIR__ . '/../../../../../');
 
