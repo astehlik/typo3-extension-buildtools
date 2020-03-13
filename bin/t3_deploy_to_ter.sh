@@ -46,16 +46,20 @@ echo "Detected build directory name $buildDirectoryName"
 
 versionNumber="${TRAVIS_TAG#v}"
 function assertVersionNumberInFile {
-    if grep "${versionNumber}" "${1}"; then
-        echo "Correct version number ${versionNumber} found in $1"
+    file="${1}"
+    if grep "${versionNumber}" "${file}"; then
+        echo "Correct version number ${versionNumber} found in ${file}"
     else
-        echo "Version number ${versionNumber} not found in $1!"
+        echo "Version number ${versionNumber} not found in ${file}!"
         exit 1
     fi
 }
 
 assertVersionNumberInFile ext_emconf.php
-assertVersionNumberInFile Documentation/Settings.cfg
+
+if [[ -e Documentation/Settings.cfg ]]; then
+    assertVersionNumberInFile Documentation/Settings.cfg
+fi
 
 cd ..
 

@@ -21,14 +21,16 @@ echo "Replacing release number in ext_emconf.php..."
 
 sed -i -E "s/'version' => '.+'/'version' => '$release'/" ext_emconf.php
 
-echo "Replacing version numbers documentation settings..."
+git add ext_emconf.php
 
-sed -i -E "s/version     = .+/version     = $version/" Documentation/Settings.cfg
-sed -i -E "s/release     = .+/release     = $release/" Documentation/Settings.cfg
+if [[ -e Documentation/Settings.cfg ]]; then
+    echo "Replacing version numbers documentation settings..."
 
-echo "Adding changed files to git..."
+    sed -i -E "s/version     = .+/version     = $version/" Documentation/Settings.cfg
+    sed -i -E "s/release     = .+/release     = $release/" Documentation/Settings.cfg
 
-git add ext_emconf.php Documentation/Settings.cfg
+    git add Documentation/Settings.cfg
+fi
 
 git commit -m "[TASK] Release version $release"
 
