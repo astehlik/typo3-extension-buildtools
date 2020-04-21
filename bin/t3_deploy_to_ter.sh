@@ -4,7 +4,7 @@ set -ev
 
 phpenv config-rm xdebug.ini
 
-THIS_SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+THIS_SCRIPT_DIR="$( cd "$( dirname "`readlink -f ${BASH_SOURCE[0]}`" )" >/dev/null && pwd )"
 cd "$THIS_SCRIPT_DIR" || exit 1
 
 if [[ -z "${TYPO3_EXTENSION_KEY}" ]]; then
@@ -27,7 +27,9 @@ if [[ -z "${TYPO3_ORG_PASSWORD}" ]]; then
     exit 1
 fi
 
-cd ../..
+. script.inc.sh
+
+cd "${ROOT_DIR}"
 
 echo "Cleanup Git repository..."
 git reset --hard HEAD && git clean -fx
