@@ -42,5 +42,3 @@ else
     php .Build/bin/phpcs --config-set installed_paths ${PWD}/.Build/vendor/de-swebhosting/php-codestyle/PhpCodeSniffer/,${PWD}/Tests/CodeSniffer
     php ${phpcsCmd} --standard=${customRuleset} ${testPaths}
 fi
-
-
