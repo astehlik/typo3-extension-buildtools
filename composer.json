@@ -21,5 +21,12 @@
 		"psr-4": {
 			"De\\SWebhosting\\Buildtools\\": "src/"
 		}
+	},
+	"extra": {
+		"typo3/class-alias-loader": {
+			"class-alias-maps": [
+				"legacy/ClassAliasMap.php"
+			]
+		}
 	}
 }
