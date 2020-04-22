@@ -33,7 +33,7 @@ fi
 
 cd "${ROOT_DIR}"
 
-tagMessage=`git tag -n10 -l ${TRAVIS_TAG} | sed 's/^v[0-9.]*[ ]*//g'`
+tagMessage="`git tag -n10 -l ${TRAVIS_TAG} | sed 's/^v[0-9.]*[ ]*//g'`"
 
 if [[ -z "$tagMessage" ]]; then
     echo "The tag message could not be detected or was empty."
@@ -87,4 +87,5 @@ rm typo3-repository-client -Rf
 composer create-project --no-dev namelesscoder/typo3-repository-client typo3-repository-client
 
 echo "Uploading release ${TRAVIS_TAG} to TER"
+echo "Tag message: ${tagMessage}"
 ./typo3-repository-client/bin/upload "${EXTENSION_DIRECTORY}" "${TYPO3_ORG_USERNAME}" "${TYPO3_ORG_PASSWORD}" "${tagMessage}"
