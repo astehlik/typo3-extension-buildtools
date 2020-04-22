@@ -33,9 +33,6 @@ fi
 
 cd "${ROOT_DIR}"
 
-echo "Cleanup Git repository..."
-git reset --hard HEAD && git clean -fx
-
 tagMessage=`git tag -n10 -l ${TRAVIS_TAG} | sed 's/^v[0-9.]*[ ]*//g'`
 
 if [[ -z "$tagMessage" ]]; then
@@ -72,6 +69,9 @@ if [[ -e Documentation/Settings.cfg ]]; then
     echo "Making sure version variable is used in documentation settings"
     assertStringInFile "{extension.version}" Documentation/Settings.cfg
 fi
+
+echo "Cleanup Git repository..."
+git reset --hard HEAD && git clean -fx
 
 EXTENSION_DIRECTORY="$PWD"
 
