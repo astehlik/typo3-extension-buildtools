@@ -51,7 +51,7 @@ echo "Detected build directory name $buildDirectoryName"
 versionNumber="${TRAVIS_TAG#v}"
 function assertVersionNumberInFile {
     file="${1}"
-    assertStringInFile "${versionNumber}" "${file}"
+    assertStringInFile "'${versionNumber}'" "${file}"
 }
 
 function assertStringInFile {
