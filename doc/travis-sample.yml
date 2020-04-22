@@ -24,41 +24,41 @@ jobs:
   include:
     - stage: test
       name: "Composer validate"
-      php: "7.3"
+      php: "7.4"
       script: bash .Build/bin/t3_run_tests.sh -s composerValidate -p $TRAVIS_PHP_VERSION
     - name: "PHP code sniffer"
-      php: "7.3"
+      php: "7.4"
       script: bash .Build/bin/t3_check_codestyle.sh [your_custom_codestyle]
 
-    - name: "Unit tests PHP 7.2"
-      php: "7.2"
-      script: bash .Build/bin/t3_run_tests.sh -s unit -p $TRAVIS_PHP_VERSION
     - name: "Unit tests PHP 7.3"
       php: "7.3"
       script: bash .Build/bin/t3_run_tests.sh -s unit -p $TRAVIS_PHP_VERSION
+    - name: "Unit tests PHP 7.4"
+      php: "7.4"
+      script: bash .Build/bin/t3_run_tests.sh -s unit -p $TRAVIS_PHP_VERSION
 
-    - name: "Functional tests on MySQL PHP 7.2"
-      php: "7.2"
-      script: bash .Build/bin/t3_run_tests.sh -s functional -p $TRAVIS_PHP_VERSION
-    - name: "Functional tests on MySQL PHP 7.3"
+    - name: "Functional tests on SQLite PHP 7.3"
       php: "7.3"
+      script: bash .Build/bin/t3_run_tests.sh -s functional -d sqlite -p $TRAVIS_PHP_VERSION
+    - name: "Functional tests on MySQL PHP 7.4"
+      php: "7.4"
       script: bash .Build/bin/t3_run_tests.sh -s functional -p $TRAVIS_PHP_VERSION
 
-    - name: "PHP linting PHP 7.2"
-      php: "7.2"
-      script: bash .Build/bin/t3_run_tests.sh -s lint -p $TRAVIS_PHP_VERSION
     - name: "PHP linting PHP 7.3"
       php: "7.3"
       script: bash .Build/bin/t3_run_tests.sh -s lint -p $TRAVIS_PHP_VERSION
+    - name: "PHP linting PHP 7.4"
+      php: "7.4"
+      script: bash .Build/bin/t3_run_tests.sh -s lint -p $TRAVIS_PHP_VERSION
 
-    - name: "Acceptance tests PHP 7.2"
-      php: "7.2"
-      script: bash .Build/bin/t3_run_tests.sh -s acceptance -p $TRAVIS_PHP_VERSION
     - name: "Acceptance tests PHP 7.3"
       php: "7.3"
+      script: bash .Build/bin/t3_run_tests.sh -s acceptance -p $TRAVIS_PHP_VERSION
+    - name: "Acceptance tests PHP 7.4"
+      php: "7.4"
       script: bash .Build/bin/t3_run_tests.sh -s acceptance -p $TRAVIS_PHP_VERSION
 
     - stage: deploy
       name: "Deploy to TER"
-      php: "7.3"
+      php: "7.4"
       script: bash .Build/bin/t3_deploy_to_ter.sh

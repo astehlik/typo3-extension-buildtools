@@ -64,10 +64,10 @@ The Example Travis CI config will
 
 * validate the `composer.json` file
 * check the code style of your PHP code
-* run Unit Tests for PHP 7.2 and 7.3
-* run functional Tests for PHP 7.2 and 7.3
-* run PHP linting for PHP 7.2 and 7.3
-* run acceptance tests for PHP 7.2 and 7.2
+* run Unit Tests for PHP 7.3 and 7.4
+* run functional Tests for PHP 7.3 and 7.4
+* run PHP linting for PHP 7.3 and 7.4
+* run acceptance tests for PHP 7.3 and 7.4
 
 It will also try to deploy your Extension to TER when a tag is pushed. You need to set your TYPO3 login data
 in Travis environment variables for this to work (see [Deploy to TER](#deploy-to-ter)).
