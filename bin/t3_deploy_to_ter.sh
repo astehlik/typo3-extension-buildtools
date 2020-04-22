@@ -2,7 +2,9 @@
 
 set -e
 
-phpenv config-rm xdebug.ini
+if hash phpenv 2>/dev/null; then
+    phpenv config-rm xdebug.ini
+fi
 
 THIS_SCRIPT_DIR="$( cd "$( dirname "`readlink -f ${BASH_SOURCE[0]}`" )" >/dev/null && pwd )"
 cd "$THIS_SCRIPT_DIR" || exit 1
