@@ -49,18 +49,26 @@ echo "Detected build directory name $buildDirectoryName"
 versionNumber="${TRAVIS_TAG#v}"
 function assertVersionNumberInFile {
     file="${1}"
-    if grep "${versionNumber}" "${file}"; then
-        echo "Correct version number ${versionNumber} found in ${file}"
+    assertStringInFile "${versionNumber}" "${file}"
+}
+
+function assertStringInFile {
+    expectedString="${1}"
+    file="${2}"
+    if grep "${expectedString}" "${file}"; then
+        echo "Expected string ${expectedString} found in ${file}"
     else
-        echo "Version number ${versionNumber} not found in ${file}!"
+        echo "Expected string ${expectedString} not found in ${file}!"
         exit 1
     fi
 }
 
+echo "Making sure version number matches in ext_emconf.php"
 assertVersionNumberInFile ext_emconf.php
 
 if [[ -e Documentation/Settings.cfg ]]; then
-    assertVersionNumberInFile Documentation/Settings.cfg
+    echo "Making sure version variable is used in documentation settings"
+    assertStringInFile "{extension.version}" Documentation/Settings.cfg
 fi
 
 cd ..
