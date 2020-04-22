@@ -71,6 +71,8 @@ if [[ -e Documentation/Settings.cfg ]]; then
     assertStringInFile "{extension.version}" Documentation/Settings.cfg
 fi
 
+EXTENSION_DIRECTORY="$PWD"
+
 cd ..
 
 if [[ "${buildDirectoryName}" != "${TYPO3_EXTENSION_KEY}" ]]; then
@@ -79,12 +81,8 @@ if [[ "${buildDirectoryName}" != "${TYPO3_EXTENSION_KEY}" ]]; then
 fi
 
 echo "Installing TYPO3 repository client..."
+rm typo3-repository-client -Rf
 composer create-project --no-dev namelesscoder/typo3-repository-client typo3-repository-client
 
-cd ${TYPO3_EXTENSION_KEY}
-
-echo "Setting version to ${TRAVIS_TAG#"v"}"
-../typo3-repository-client/bin/setversion ${TRAVIS_TAG#"v"}
-
 echo "Uploading release ${TRAVIS_TAG} to TER"
-../typo3-repository-client/bin/upload . "${TYPO3_ORG_USERNAME}" "${TYPO3_ORG_PASSWORD}" "${tagMessage}"
+./typo3-repository-client/bin/upload "${EXTENSION_DIRECTORY}" "${TYPO3_ORG_USERNAME}" "${TYPO3_ORG_PASSWORD}" "${tagMessage}"
