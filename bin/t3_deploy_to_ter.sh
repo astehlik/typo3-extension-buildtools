@@ -65,11 +65,6 @@ function assertStringInFile {
 echo "Making sure version number matches in ext_emconf.php"
 assertVersionNumberInFile ext_emconf.php
 
-if [[ -e Documentation/Settings.cfg ]]; then
-    echo "Making sure version variable is used in documentation settings"
-    assertStringInFile "{extension.version}" Documentation/Settings.cfg
-fi
-
 echo "Cleanup Git repository..."
 git reset --hard HEAD && git clean -fx
 
