@@ -68,8 +68,6 @@ assertVersionNumberInFile ext_emconf.php
 echo "Cleanup Git repository..."
 git reset --hard HEAD && git clean -fx
 
-EXTENSION_DIRECTORY="$PWD"
-
 cd ..
 
 if [[ "${buildDirectoryName}" != "${TYPO3_EXTENSION_KEY}" ]]; then
@@ -83,4 +81,4 @@ composer create-project --no-dev namelesscoder/typo3-repository-client:2.0.x-dev
 
 echo "Uploading release ${TRAVIS_TAG} to TER"
 echo "Tag message: ${tagMessage}"
-./typo3-repository-client/bin/upload "${EXTENSION_DIRECTORY}" "${TYPO3_ORG_USERNAME}" "${TYPO3_ORG_PASSWORD}" "${tagMessage}"
+./typo3-repository-client/bin/upload "${TYPO3_EXTENSION_KEY}" "${TYPO3_ORG_USERNAME}" "${TYPO3_ORG_PASSWORD}" "${tagMessage}"
