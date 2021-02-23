@@ -84,7 +84,7 @@ fi
 
 echo "Installing TYPO3 repository client..."
 rm typo3-repository-client -Rf
-composer create-project --no-dev namelesscoder/typo3-repository-client typo3-repository-client
+composer create-project --no-dev namelesscoder/typo3-repository-client:2.0.x-dev typo3-repository-client --remove-vcs --prefer-dist --no-dev --no-interaction
 
 echo "Uploading release ${TRAVIS_TAG} to TER"
 echo "Tag message: ${tagMessage}"
