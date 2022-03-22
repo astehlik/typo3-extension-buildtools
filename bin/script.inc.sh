@@ -7,6 +7,7 @@ while [[ "$PWD" != "/" ]] ; do
 
     if [[ -e composer.json ]]; then
         ROOT_DIR="$PWD"
+        CORE_ROOT="$PWD"
         break
     fi
 done

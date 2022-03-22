@@ -2,113 +2,436 @@ version: '2.3'
 services:
   chrome:
     image: selenium/standalone-chrome:3.12
-    ulimits:
-      nproc: 65535
-      nofile:
-        soft: 20000
-        hard: 40000
 
-  mariadb10:
-    image: mariadb:10
+  mysql:
+    image: mysql:${MYSQL_VERSION}
     environment:
       MYSQL_ROOT_PASSWORD: funcp
     tmpfs:
       - /var/lib/mysql/:rw,noexec,nosuid
 
-  mssql2017cu9:
-    image: microsoft/mssql-server-linux:2017-CU9
+  mariadb:
+    image: mariadb:${MARIADB_VERSION}
     environment:
-      ACCEPT_EULA: Y
+      MYSQL_ROOT_PASSWORD: funcp
+    tmpfs:
+      - /var/lib/mysql/:rw,noexec,nosuid
+
+  mssql2019latest:
+    image: typo3/core-testing-mssql2019:latest
+    environment:
+      ACCEPT_EULA: "Y"
       SA_PASSWORD: "Test1234!"
       MSSQL_PID: Developer
-    # No tmpfs setup here since mssql fails on tmpfs o_direct.
-    # This makes mssql sloooow for functionals.
 
-  postgres10:
-    image: postgres:10
+  postgres:
+    image: postgres:${POSTGRES_VERSION}-alpine
     environment:
       POSTGRES_PASSWORD: funcp
-      POSTGRES_USER: ${HOST_USER}
+      POSTGRES_USER: funcu
     tmpfs:
       - /var/lib/postgresql/data:rw,noexec,nosuid
 
   web:
-    image: typo3gmbh/${DOCKER_PHP_IMAGE}:latest
-    user: ${HOST_UID}
+    image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
+    user: "${HOST_UID}"
     stop_grace_period: 1s
+    ports:
+      - 8000:8000
     volumes:
-      - ${ROOT_DIR}:${ROOT_DIR}
-      - /etc/passwd:/etc/passwd:ro
-      - /etc/group:/etc/group:ro
+      - ${CORE_ROOT}:${CORE_ROOT}
     environment:
-      TYPO3_PATH_ROOT: ${ROOT_DIR}/.Build/Web/typo3temp/var/tests/acceptance
-      TYPO3_PATH_APP: ${ROOT_DIR}/.Build/Web/typo3temp/var/tests/acceptance
-    command: php -n -c /etc/php/cli-no-xdebug/php.ini -S web:8000 -t ${ROOT_DIR}/.Build/Web
-
+      TYPO3_PATH_ROOT: ${CORE_ROOT}/.Build/Web/typo3temp/var/tests/acceptance
+      TYPO3_PATH_APP: ${CORE_ROOT}/.Build/Web/typo3temp/var/tests/acceptance
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: >
+      /bin/sh -c "
+        if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
+          XDEBUG_MODE=\"off\" \
+          php -S web:8000 -t ${CORE_ROOT}/.Build/Web
+        else
+          XDEBUG_MODE=\"debug,develop\" \
+          XDEBUG_TRIGGER=\"foo\" \
+          XDEBUG_CONFIG=\"client_port=${PHP_XDEBUG_PORT} client_host=host.docker.internal\" \
+          php -S web:8000 -t ${CORE_ROOT}/.Build/Web
+        fi
+      "
   redis4:
     image: redis:4-alpine
 
   memcached1-5:
     image: memcached:1.5-alpine
 
-  acceptance_backend_mariadb10:
-    image: typo3gmbh/${DOCKER_PHP_IMAGE}:latest
+  prepare_acceptance_backend_mariadb:
+    image: alpine:3.8
     links:
-      - mariadb10
+      - mariadb
       - chrome
       - web
-    user: ${HOST_UID}
-    environment:
-      typo3DatabaseName: func_test
-      typo3DatabaseUsername: root
-      typo3DatabasePassword: funcp
-      typo3DatabaseHost: mariadb10
-    volumes:
-      - ${ROOT_DIR}:${ROOT_DIR}
-      - ${HOST_HOME}:${HOST_HOME}
-      - /etc/passwd:/etc/passwd:ro
-      - /etc/group:/etc/group:ro
-    working_dir: ${ROOT_DIR}/.Build
     command: >
       /bin/sh -c "
         if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
           set -x
         fi
         echo Waiting for database start...;
-        while ! nc -z mariadb10 3306; do
+        while ! nc -z mariadb 3306; do
           sleep 1;
         done;
         echo Database is up;
-        mkdir -p Web/typo3temp/var/tests/ \
-          && php vendor/codeception/codeception/codecept run ${ACCEPTANCE_TEST_SUITE} -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${TEST_FILE}
       "
-
-  composer_install:
-    image: typo3gmbh/${DOCKER_PHP_IMAGE}:latest
-    user: ${HOST_UID}
+  acceptance_backend_mariadb:
+    image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
+    user: "${HOST_UID}"
+    environment:
+      typo3DatabaseName: func_test
+      typo3DatabaseUsername: root
+      typo3DatabasePassword: funcp
+      typo3DatabaseHost: mariadb
     volumes:
-      - ${ROOT_DIR}:${ROOT_DIR}
-      - ${HOST_HOME}:${HOST_HOME}
-      - /etc/passwd:/etc/passwd:ro
-      - /etc/group:/etc/group:ro
-    working_dir: ${ROOT_DIR}
+      - ${CORE_ROOT}:${CORE_ROOT}
+    working_dir: ${CORE_ROOT}/.Build
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     command: >
       /bin/sh -c "
         if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
           set -x
         fi
-        composer install;
+        php -v | grep '^PHP'
+        if [ ${CHUNKS} -gt 0 ]; then
+          echo \"Running chunk ${THISCHUNK}\"
+          COMMAND=\"bin/codecept run Backend -d -g AcceptanceTests-Job-${THISCHUNK} -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} ${TEST_FILE} --html reports.html\"
+        else
+          COMMAND=\"bin/codecept run Backend -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} ${TEST_FILE} --html reports.html\"
+        fi
+        mkdir -p typo3temp/var/tests/
+        if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
+          XDEBUG_MODE=\"off\" \
+          $${COMMAND};
+        else
+          XDEBUG_MODE=\"debug,develop\" \
+          XDEBUG_TRIGGER=\"foo\" \
+          XDEBUG_CONFIG=\"client_port=${PHP_XDEBUG_PORT} client_host=host.docker.internal\" \
+          $${COMMAND};
+        fi
       "
-
-  composer_validate:
-    image: typo3gmbh/${DOCKER_PHP_IMAGE}:latest
-    user: ${HOST_UID}
+  prepare_acceptance_backend_mysql:
+    image: alpine:3.8
+    links:
+      - mysql
+      - chrome
+      - web
+    command: >
+      /bin/sh -c "
+        if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
+          set -x
+        fi
+        echo Waiting for database start...;
+        while ! nc -z mysql 3306; do
+          sleep 1;
+        done;
+        echo Database is up;
+      "
+  acceptance_backend_mysql:
+    image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
+    user: "${HOST_UID}"
+    environment:
+      typo3DatabaseName: func_test
+      typo3DatabaseUsername: root
+      typo3DatabasePassword: funcp
+      typo3DatabaseHost: mysql
     volumes:
-      - ${ROOT_DIR}:${ROOT_DIR}
-      - ${HOST_HOME}:${HOST_HOME}
-      - /etc/passwd:/etc/passwd:ro
-      - /etc/group:/etc/group:ro
-    working_dir: ${ROOT_DIR}
+      - ${CORE_ROOT}:${CORE_ROOT}
+    working_dir: ${CORE_ROOT}/.Build
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: >
+      /bin/sh -c "
+        if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
+          set -x
+        fi
+        php -v | grep '^PHP'
+        if [ ${CHUNKS} -gt 0 ]; then
+          echo \"Running chunk ${THISCHUNK}\"
+          COMMAND=\"bin/codecept run Backend -d -g AcceptanceTests-Job-${THISCHUNK} -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} ${TEST_FILE} --html reports.html\"
+        else
+          COMMAND=\"bin/codecept run Backend -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} ${TEST_FILE} --html reports.html\"
+        fi
+        mkdir -p typo3temp/var/tests/
+        if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
+          XDEBUG_MODE=\"off\" \
+          $${COMMAND};
+        else
+          XDEBUG_MODE=\"debug,develop\" \
+          XDEBUG_TRIGGER=\"foo\" \
+          XDEBUG_CONFIG=\"client_port=${PHP_XDEBUG_PORT} client_host=host.docker.internal\" \
+          $${COMMAND};
+        fi
+      "
+  prepare_acceptance_backend_postgres:
+    image: alpine:3.8
+    links:
+      - postgres
+      - chrome
+      - web
+    command: >
+      /bin/sh -c "
+        if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
+          set -x
+        fi
+        echo Waiting for database start...;
+        while ! nc -z postgres 5432; do
+          sleep 1;
+        done;
+        echo Database is up;
+      "
+  acceptance_backend_postgres:
+    image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
+    user: "${HOST_UID}"
+    volumes:
+      - ${CORE_ROOT}:${CORE_ROOT}
+    environment:
+      typo3DatabaseDriver: pdo_pgsql
+      typo3DatabaseName: bamboo
+      typo3DatabaseUsername: funcu
+      typo3DatabaseHost: postgres
+      typo3DatabasePassword: funcp
+      typo3TestingRedisHost: redis4
+      typo3TestingMemcachedHost: memcached1-5
+    working_dir: ${CORE_ROOT}/.Build
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: >
+      /bin/sh -c "
+        if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
+          set -x
+        fi
+        php -v | grep '^PHP'
+        if [ ${CHUNKS} -gt 0 ]; then
+          echo \"Running chunk ${THISCHUNK}\"
+          COMMAND=\"bin/codecept run Backend -d -g AcceptanceTests-Job-${THISCHUNK} -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} ${TEST_FILE} --html reports.html\"
+        else
+          COMMAND=\"bin/codecept run Backend -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} ${TEST_FILE} --html reports.html\"
+        fi
+        mkdir -p typo3temp/var/tests/
+        if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
+          XDEBUG_MODE=\"off\" \
+          $${COMMAND};
+        else
+          XDEBUG_MODE=\"debug,develop\" \
+          XDEBUG_TRIGGER=\"foo\" \
+          XDEBUG_CONFIG=\"client_port=${PHP_XDEBUG_PORT} client_host=host.docker.internal\" \
+          $${COMMAND};
+        fi
+      "
+  prepare_acceptance_install_mysql:
+    image: alpine:3.8
+    links:
+      - mysql
+      - chrome
+      - web
+    command: >
+      /bin/sh -c "
+        if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
+          set -x
+        fi
+        echo Waiting for database start...;
+        while ! nc -z mysql 3306; do
+          sleep 1;
+        done;
+        echo Database is up;
+      "
+  acceptance_install_mysql:
+    image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
+    user: "${HOST_UID}"
+    environment:
+      typo3InstallMysqlDatabaseHost: mysql
+      typo3InstallMysqlDatabaseName: func_test
+      typo3InstallMysqlDatabaseUsername: root
+      typo3InstallMysqlDatabasePassword: funcp
+    volumes:
+      - ${CORE_ROOT}:${CORE_ROOT}
+    working_dir: ${CORE_ROOT}/.Build
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: >
+      /bin/sh -c "
+        if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
+          set -x
+        fi
+        mkdir -p typo3temp/var/tests/
+        if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
+          XDEBUG_MODE=\"off\" \
+          bin/codecept run Install -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} --env=mysql --html reports.html
+        else
+          XDEBUG_MODE=\"debug,develop\" \
+          XDEBUG_TRIGGER=\"foo\" \
+          XDEBUG_CONFIG=\"client_port=${PHP_XDEBUG_PORT} client_host=host.docker.internal\" \
+          bin/codecept run Install -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} --env=mysql --html reports.html
+        fi
+      "
+  prepare_acceptance_install_mariadb:
+    image: alpine:3.8
+    links:
+      - mariadb
+      - chrome
+      - web
+    command: >
+      /bin/sh -c "
+        if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
+          set -x
+        fi
+        echo Waiting for database start...;
+        while ! nc -z mariadb 3306; do
+          sleep 1;
+        done;
+        echo Database is up;
+      "
+  acceptance_install_mariadb:
+    image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
+    user: "${HOST_UID}"
+    environment:
+      typo3InstallMysqlDatabaseHost: mariadb
+      typo3InstallMysqlDatabaseName: func_test
+      typo3InstallMysqlDatabaseUsername: root
+      typo3InstallMysqlDatabasePassword: funcp
+    volumes:
+      - ${CORE_ROOT}:${CORE_ROOT}
+    working_dir: ${CORE_ROOT}/.Build
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: >
+      /bin/sh -c "
+        if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
+          set -x
+        fi
+        mkdir -p typo3temp/var/tests/
+        if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
+          XDEBUG_MODE=\"off\" \
+          bin/codecept run Install -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} --env=mysql --html reports.html
+        else
+          XDEBUG_MODE=\"debug,develop\" \
+          XDEBUG_TRIGGER=\"foo\" \
+          XDEBUG_CONFIG=\"client_port=${PHP_XDEBUG_PORT} client_host=host.docker.internal\" \
+          bin/codecept run Install -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} --env=mysql --html reports.html
+        fi
+      "
+  prepare_acceptance_install_postgres:
+    image: alpine:3.8
+    links:
+      - postgres
+      - chrome
+      - web
+    command: >
+      /bin/sh -c "
+        if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
+          set -x
+        fi
+        echo Waiting for database start...;
+        while ! nc -z postgres 5432; do
+          sleep 1;
+        done;
+        echo Database is up;
+      "
+  acceptance_install_postgres:
+    image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
+    user: "${HOST_UID}"
+    environment:
+      typo3InstallPostgresqlDatabaseHost: postgres
+      typo3InstallPostgresqlDatabaseName: ${HOST_USER}
+      typo3InstallPostgresqlDatabaseUsername: funcu
+      typo3InstallPostgresqlDatabasePassword: funcp
+    working_dir: ${CORE_ROOT}/.Build
+    volumes:
+      - ${CORE_ROOT}:${CORE_ROOT}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: >
+      /bin/sh -c "
+        if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
+          set -x
+        fi
+        mkdir -p typo3temp/var/tests/
+        if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
+          XDEBUG_MODE=\"off\" \
+          bin/codecept run Install -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} --env=postgresql --html reports.html
+        else
+          XDEBUG_MODE=\"debug,develop\" \
+          XDEBUG_TRIGGER=\"foo\" \
+          XDEBUG_CONFIG=\"client_port=${PHP_XDEBUG_PORT} client_host=host.docker.internal\" \
+          bin/codecept run Install -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} --env=postgresql --html reports.html
+        fi
+      "
+  prepare_acceptance_install_sqlite:
+    image: alpine:3.8
+    links:
+      - chrome
+      - web
+    command: >
+      /bin/sh -c "
+        sleep 1;
+      "
+  acceptance_install_sqlite:
+    image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
+    user: "${HOST_UID}"
+    volumes:
+      - ${CORE_ROOT}:${CORE_ROOT}
+    working_dir: ${CORE_ROOT}/.Build
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: >
+      /bin/sh -c "
+        if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
+          set -x
+        fi
+        mkdir -p typo3temp/var/tests/
+        if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
+          XDEBUG_MODE=\"off\" \
+          bin/codecept run Install -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} --env=sqlite --html reports.html
+        else
+          XDEBUG_MODE=\"debug,develop\" \
+          XDEBUG_TRIGGER=\"foo\" \
+          XDEBUG_CONFIG=\"client_port=${PHP_XDEBUG_PORT} client_host=host.docker.internal\" \
+          bin/codecept run Install -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} --env=sqlite --html reports.html
+        fi
+      "
+  cgl_all:
+    image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
+    user: "${HOST_UID}"
+    volumes:
+      - ${CORE_ROOT}:${CORE_ROOT}
+    working_dir: ${CORE_ROOT}
+    command: >
+      /bin/sh -c "
+        if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
+          set -x
+        fi
+        php -dxdebug.mode=off bin/php-cs-fixer fix -v ${CGLCHECK_DRY_RUN} --path-mode intersection \
+          --config=Build/php-cs-fixer.php typo3/
+      "
+  composer_install:
+    image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
+    user: "${HOST_UID}"
+    volumes:
+      - ${CORE_ROOT}:${CORE_ROOT}
+    working_dir: ${CORE_ROOT}
+    environment:
+      COMPOSER_ROOT_VERSION: "10.4"
+      COMPOSER_CACHE_DIR: ".cache/composer"
+    command: >
+      /bin/sh -c "
+        if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
+          set -x
+        fi
+        composer install --no-progress --no-interaction;
+      "
+  composer_validate:
+    image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
+    user: "${HOST_UID}"
+    volumes:
+      - ${CORE_ROOT}:${CORE_ROOT}
+    working_dir: ${CORE_ROOT}
     command: >
       /bin/sh -c "
         if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
@@ -116,10 +439,10 @@ services:
         fi
         composer validate;
       "
-  prepare_functional_mariadb10:
+  prepare_functional_mariadb:
     image: alpine:3.8
     links:
-      - mariadb10
+      - mariadb
       - redis4
       - memcached1-5
     command: >
@@ -128,46 +451,52 @@ services:
           set -x
         fi
         echo Waiting for database start...;
-        while ! nc -z mariadb10 3306; do
+        while ! nc -z mariadb 3306; do
           sleep 1;
         done;
         echo Database is up;
       "
-  functional_mariadb10:
-    image: typo3gmbh/${DOCKER_PHP_IMAGE}:latest
-    user: ${HOST_UID}
+  functional_mariadb:
+    image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
+    user: "${HOST_UID}"
     volumes:
-      - ${ROOT_DIR}:${ROOT_DIR}
-      - ${HOST_HOME}:${HOST_HOME}
-      - /etc/passwd:/etc/passwd:ro
-      - /etc/group:/etc/group:ro
+      - ${CORE_ROOT}:${CORE_ROOT}
     environment:
+      typo3DatabaseDriver: "${DATABASE_DRIVER}"
       typo3DatabaseName: func_test
       typo3DatabaseUsername: root
       typo3DatabasePassword: funcp
-      typo3DatabaseHost: mariadb10
+      typo3DatabaseHost: mariadb
       typo3TestingRedisHost: redis4
       typo3TestingMemcachedHost: memcached1-5
-    working_dir: ${ROOT_DIR}/.Build
+    working_dir: ${CORE_ROOT}/.Build
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     command: >
       /bin/sh -c "
         if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
           set -x
         fi
         php -v | grep '^PHP'
-        if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
-          php -n -c /etc/php/cli-no-xdebug/php.ini \
-            vendor/phpunit/phpunit/phpunit -c vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests.xml ${EXTRA_TEST_OPTIONS} ${TEST_FILE};
+        if [ ${CHUNKS} -gt 0 ]; then
+          echo \"Running chunk ${THISCHUNK}\"
+          COMMAND=\"vendor/phpunit/phpunit/phpunit -c Build/FunctionalTests-Job-${THISCHUNK}.xml ${EXTRA_TEST_OPTIONS} ${TEST_FILE}\"
         else
-          DOCKER_HOST=`route -n | awk '/^0.0.0.0/ { print $$2 }'`
-          XDEBUG_CONFIG=\"remote_port=${PHP_XDEBUG_PORT} remote_enable=1 remote_host=$${DOCKER_HOST}\" \
-            vendor/phpunit/phpunit/phpunit -c vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests.xml ${EXTRA_TEST_OPTIONS} ${TEST_FILE};
+          COMMAND=\"vendor/phpunit/phpunit/phpunit -c vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests.xml ${EXTRA_TEST_OPTIONS} ${TEST_FILE}\"
+        fi
+        if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
+          XDEBUG_MODE=\"off\" $${COMMAND};
+        else
+          XDEBUG_MODE=\"debug,develop\" \
+          XDEBUG_TRIGGER=\"foo\" \
+          XDEBUG_CONFIG=\"client_port=${PHP_XDEBUG_PORT} client_host=host.docker.internal\" \
+          $${COMMAND};
         fi
       "
-  prepare_functional_mssql2017cu9:
+  prepare_functional_mysql:
     image: alpine:3.8
     links:
-      - mssql2017cu9
+      - mysql
       - redis4
       - memcached1-5
     command: >
@@ -176,49 +505,108 @@ services:
           set -x
         fi
         echo Waiting for database start...;
-        while ! nc -z mssql2017cu9 1433; do
+        while ! nc -z mysql 3306; do
           sleep 1;
         done;
         echo Database is up;
       "
-  functional_mssql2017cu9:
-    image: typo3gmbh/${DOCKER_PHP_IMAGE}:latest
-    user: ${HOST_UID}
+  functional_mysql:
+    image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
+    user: "${HOST_UID}"
     volumes:
-      - ${ROOT_DIR}:${ROOT_DIR}
-      - ${HOST_HOME}:${HOST_HOME}
-      - /etc/passwd:/etc/passwd:ro
-      - /etc/group:/etc/group:ro
+      - ${CORE_ROOT}:${CORE_ROOT}
     environment:
-      typo3DatabaseDriver: sqlsrv
+      typo3DatabaseDriver: "${DATABASE_DRIVER}"
+      typo3DatabaseName: func_test
+      typo3DatabaseUsername: root
+      typo3DatabasePassword: funcp
+      typo3DatabaseHost: mysql
+      typo3TestingRedisHost: redis4
+      typo3TestingMemcachedHost: memcached1-5
+    working_dir: ${CORE_ROOT}/.Build
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: >
+      /bin/sh -c "
+        if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
+          set -x
+        fi
+        php -v | grep '^PHP'
+        if [ ${CHUNKS} -gt 0 ]; then
+          echo \"Running chunk ${THISCHUNK}\"
+          COMMAND=\"vendor/phpunit/phpunit/phpunit -c Build/FunctionalTests-Job-${THISCHUNK}.xml ${EXTRA_TEST_OPTIONS} ${TEST_FILE}\"
+        else
+          COMMAND=\"vendor/phpunit/phpunit/phpunit -c vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests.xml ${EXTRA_TEST_OPTIONS} ${TEST_FILE}\"
+        fi
+        if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
+          XDEBUG_MODE=\"off\" $${COMMAND};
+        else
+          XDEBUG_MODE=\"debug,develop\" \
+          XDEBUG_TRIGGER=\"foo\" \
+          XDEBUG_CONFIG=\"client_port=${PHP_XDEBUG_PORT} client_host=host.docker.internal\" \
+          $${COMMAND};
+        fi
+      "
+  prepare_functional_mssql2019latest:
+    image: alpine:3.8
+    links:
+      - mssql2019latest
+      - redis4
+      - memcached1-5
+    command: >
+      /bin/sh -c "
+        if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
+          set -x
+        fi
+        echo Waiting for database start...;
+        while ! nc -z mssql2019latest 1433; do
+          sleep 1;
+        done;
+        echo Database is up;
+      "
+  functional_mssql2019latest:
+    image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
+    user: "${HOST_UID}"
+    volumes:
+      - ${CORE_ROOT}:${CORE_ROOT}
+    environment:
+      typo3DatabaseDriver: "${DATABASE_DRIVER}"
       typo3DatabaseName: func
       typo3DatabasePassword: "Test1234!"
       typo3DatabaseUsername: SA
       typo3DatabasePort: 1433
       typo3DatabaseCharset: utf-8
-      typo3DatabaseHost: mssql2017cu9
+      typo3DatabaseHost: mssql2019latest
       typo3TestingRedisHost: redis4
       typo3TestingMemcachedHost: memcached1-5
-    working_dir: ${ROOT_DIR}/.Build
+    working_dir: ${CORE_ROOT}/.Build
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     command: >
       /bin/sh -c "
         if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
           set -x
         fi
         php -v | grep '^PHP'
-        if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
-          php -n -c /etc/php/cli-no-xdebug/php.ini \
-            vendor/phpunit/phpunit/phpunit -c vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests.xml ${EXTRA_TEST_OPTIONS} --exclude-group not-mssql ${TEST_FILE};
+        if [ ${CHUNKS} -gt 0 ]; then
+          echo \"Running chunk ${THISCHUNK}\"
+          COMMAND=\"vendor/phpunit/phpunit/phpunit -c Build/FunctionalTests-Job-${THISCHUNK}.xml ${EXTRA_TEST_OPTIONS} --exclude-group not-mssql ${TEST_FILE}\"
         else
-          DOCKER_HOST=`route -n | awk '/^0.0.0.0/ { print $$2 }'`
-          XDEBUG_CONFIG=\"remote_port=${PHP_XDEBUG_PORT} remote_enable=1 remote_host=$${DOCKER_HOST}\" \
-            vendor/phpunit/phpunit/phpunit -c vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests.xml ${EXTRA_TEST_OPTIONS} --exclude-group not-mssql ${TEST_FILE};
+          COMMAND=\"vendor/phpunit/phpunit/phpunit -c vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests.xml ${EXTRA_TEST_OPTIONS} --exclude-group not-mssql ${TEST_FILE}\"
+        fi
+        if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
+          XDEBUG_MODE=\"off\" $${COMMAND};
+        else
+          XDEBUG_MODE=\"debug,develop\" \
+          XDEBUG_TRIGGER=\"foo\" \
+          XDEBUG_CONFIG=\"client_port=${PHP_XDEBUG_PORT} client_host=host.docker.internal\" \
+          $${COMMAND};
         fi
       "
-  prepare_functional_postgres10:
+  prepare_functional_postgres:
     image: alpine:3.8
     links:
-      - postgres10
+      - postgres
       - redis4
       - memcached1-5
     command: >
@@ -227,41 +615,46 @@ services:
           set -x
         fi
         echo Waiting for database start...;
-        while ! nc -z postgres10 5432; do
+        while ! nc -z postgres 5432; do
           sleep 1;
         done;
         echo Database is up;
       "
-  functional_postgres10:
-    image: typo3gmbh/${DOCKER_PHP_IMAGE}:latest
-    user: ${HOST_UID}
+  functional_postgres:
+    image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
+    user: "${HOST_UID}"
     volumes:
-      - ${ROOT_DIR}:${ROOT_DIR}
-      - ${HOST_HOME}:${HOST_HOME}
-      - /etc/passwd:/etc/passwd:ro
-      - /etc/group:/etc/group:ro
+      - ${CORE_ROOT}:${CORE_ROOT}
     environment:
       typo3DatabaseDriver: pdo_pgsql
       typo3DatabaseName: bamboo
-      typo3DatabaseUsername: ${HOST_USER}
-      typo3DatabaseHost: postgres10
+      typo3DatabaseUsername: funcu
+      typo3DatabaseHost: postgres
       typo3DatabasePassword: funcp
       typo3TestingRedisHost: redis4
       typo3TestingMemcachedHost: memcached1-5
-    working_dir: ${ROOT_DIR}/.Build
+    working_dir: ${CORE_ROOT}/.Build
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     command: >
       /bin/sh -c "
         if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
           set -x
         fi
         php -v | grep '^PHP'
-        if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
-          php -n -c /etc/php/cli-no-xdebug/php.ini \
-            vendor/phpunit/phpunit/phpunit -c vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests.xml ${EXTRA_TEST_OPTIONS} --exclude-group not-postgres ${TEST_FILE};
+        if [ ${CHUNKS} -gt 0 ]; then
+          echo \"Running chunk ${THISCHUNK}\"
+          COMMAND=\"vendor/phpunit/phpunit/phpunit -c Build/FunctionalTests-Job-${THISCHUNK}.xml ${EXTRA_TEST_OPTIONS} --exclude-group not-postgres ${TEST_FILE}\"
         else
-          DOCKER_HOST=`route -n | awk '/^0.0.0.0/ { print $$2 }'`
-          XDEBUG_CONFIG=\"remote_port=${PHP_XDEBUG_PORT} remote_enable=1 remote_host=$${DOCKER_HOST}\" \
-            vendor/phpunit/phpunit/phpunit -c vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests.xml ${EXTRA_TEST_OPTIONS} --exclude-group not-postgres ${TEST_FILE};
+          COMMAND=\"vendor/phpunit/phpunit/phpunit -c vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests.xml ${EXTRA_TEST_OPTIONS} --exclude-group not-postgres ${TEST_FILE}\"
+        fi
+        if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
+          XDEBUG_MODE=\"off\" $${COMMAND};
+        else
+          XDEBUG_MODE=\"debug,develop\" \
+          XDEBUG_TRIGGER=\"foo\" \
+          XDEBUG_CONFIG=\"client_port=${PHP_XDEBUG_PORT} client_host=host.docker.internal\" \
+          $${COMMAND};
         fi
       "
   prepare_functional_sqlite:
@@ -274,62 +667,62 @@ services:
         sleep 1;
       "
   functional_sqlite:
-    image: typo3gmbh/${DOCKER_PHP_IMAGE}:latest
-    user: ${HOST_UID}
+    image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
+    user: "${HOST_UID}"
+    tmpfs:
+      - ${CORE_ROOT}/typo3temp/var/tests/functional-sqlite-dbs/:rw,noexec,nosuid,uid=${HOST_UID}
     volumes:
-      - ${ROOT_DIR}:${ROOT_DIR}
-      - ${HOST_HOME}:${HOST_HOME}
-      - /etc/passwd:/etc/passwd:ro
-      - /etc/group:/etc/group:ro
-      # @todo: sqlite DB is currently written to functional-doc-root (typo3temp/var/test-functional-xy/) /test.sqlite
-      # This directory is mapped to the local dir, so it is hard disk and not a tmpfs. sqlite functionals would speed
-      # up significantly if typo3/testing-framework would accept an environment variable to locate test.sqlite file on
-      # some tmpfs mount. Note this is not an issue within bamboo since in bamboo the entire core checkout is a tmpfs already.
+      - ${CORE_ROOT}:${CORE_ROOT}
     environment:
       typo3DatabaseDriver: pdo_sqlite
       typo3TestingRedisHost: redis4
       typo3TestingMemcachedHost: memcached1-5
-    working_dir: ${ROOT_DIR}/.Build
+    working_dir: ${CORE_ROOT}/.Build
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     command: >
       /bin/sh -c "
         if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
           set -x
         fi
         php -v | grep '^PHP'
-        if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
-          php -n -c /etc/php/cli-no-xdebug/php.ini \
-            vendor/phpunit/phpunit/phpunit -c vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests.xml ${EXTRA_TEST_OPTIONS} --exclude-group not-sqlite ${TEST_FILE};
+        if [ ${CHUNKS} -gt 0 ]; then
+          echo \"Running chunk ${THISCHUNK}\"
+          COMMAND=\"vendor/phpunit/phpunit/phpunit -c Build/FunctionalTests-Job-${THISCHUNK}.xml ${EXTRA_TEST_OPTIONS} --exclude-group not-sqlite ${TEST_FILE}\"
         else
-          DOCKER_HOST=`route -n | awk '/^0.0.0.0/ { print $$2 }'`
-          XDEBUG_CONFIG=\"remote_port=${PHP_XDEBUG_PORT} remote_enable=1 remote_host=$${DOCKER_HOST}\" \
-            vendor/phpunit/phpunit/phpunit -c vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests.xml ${EXTRA_TEST_OPTIONS} --exclude-group not-sqlite ${TEST_FILE};
+          COMMAND=\"vendor/phpunit/phpunit/phpunit -c vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests.xml ${EXTRA_TEST_OPTIONS} --exclude-group not-sqlite ${TEST_FILE}\"
+        fi
+        if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
+          XDEBUG_MODE=\"off\" $${COMMAND};
+        else
+          XDEBUG_MODE=\"debug,develop\" \
+          XDEBUG_TRIGGER=\"foo\" \
+          XDEBUG_CONFIG=\"client_port=${PHP_XDEBUG_PORT} client_host=host.docker.internal\" \
+          $${COMMAND};
         fi
       "
-  lint:
-    image: typo3gmbh/${DOCKER_PHP_IMAGE}:latest
-    user: ${HOST_UID}
+  lint_php:
+    image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
+    user: "${HOST_UID}"
     volumes:
-      - ${ROOT_DIR}:${ROOT_DIR}
-      - /etc/passwd:/etc/passwd:ro
-      - /etc/group:/etc/group:ro
-    working_dir: ${ROOT_DIR}
+      - ${CORE_ROOT}:${CORE_ROOT}
+    working_dir: ${CORE_ROOT}
     command: >
       /bin/sh -c "
         if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
           set -x
         fi
-        php -v | grep '^PHP';
-        find . -name \\*.php ! -path "./.Build/\\*" -print0 | xargs -0 -n1 -P4 php -n -c /etc/php/cli-no-xdebug/php.ini -l >/dev/null
+        php -v | grep '^PHP'
+        find typo3/ -name \\*.php -print0 | xargs -0 -n1 -P4 php -dxdebug.mode=off -l >/dev/null
       "
   unit:
-    image: typo3gmbh/${DOCKER_PHP_IMAGE}:latest
-    user: ${HOST_UID}
+    image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
+    user: "${HOST_UID}"
     volumes:
-      - ${ROOT_DIR}:${ROOT_DIR}
-      - ${HOST_HOME}:${HOST_HOME}
-      - /etc/passwd:/etc/passwd:ro
-      - /etc/group:/etc/group:ro
-    working_dir: ${ROOT_DIR}/.Build
+      - ${CORE_ROOT}:${CORE_ROOT}
+    working_dir: ${CORE_ROOT}/.Build
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     command: >
       /bin/sh -c "
         if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
@@ -337,11 +730,36 @@ services:
         fi
         php -v | grep '^PHP'
         if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
-          php -n -c /etc/php/cli-no-xdebug/php.ini \
-            bin/phpunit -c vendor/typo3/testing-framework/Resources/Core/Build/UnitTests.xml ${EXTRA_TEST_OPTIONS} ${TEST_FILE};
+          XDEBUG_MODE=\"off\" \
+          vendor/phpunit/phpunit/phpunit -c vendor/typo3/testing-framework/Resources/Core/Build/UnitTests.xml ${EXTRA_TEST_OPTIONS} ${TEST_FILE};
         else
-          DOCKER_HOST=`route -n | awk '/^0.0.0.0/ { print $$2 }'`
-          XDEBUG_CONFIG=\"remote_port=${PHP_XDEBUG_PORT} remote_enable=1 remote_host=$${DOCKER_HOST}\" \
-            bin/phpunit -c vendor/typo3/testing-framework/Resources/Core/Build/UnitTests.xml ${EXTRA_TEST_OPTIONS} ${TEST_FILE};
+          XDEBUG_MODE=\"debug,develop\" \
+          XDEBUG_TRIGGER=\"foo\" \
+          XDEBUG_CONFIG=\"client_port=${PHP_XDEBUG_PORT} client_host=host.docker.internal\" \
+          vendor/phpunit/phpunit/phpunit -c vendor/typo3/testing-framework/Resources/Core/Build/UnitTests.xml ${EXTRA_TEST_OPTIONS} ${TEST_FILE};
+        fi
+      "
+  unitRandom:
+    image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
+    user: "${HOST_UID}"
+    volumes:
+      - ${CORE_ROOT}:${CORE_ROOT}
+    working_dir: ${CORE_ROOT}/.Build
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: >
+      /bin/sh -c "
+        if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
+          set -x
+        fi
+        php -v | grep '^PHP'
+        if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
+          XDEBUG_MODE=\"off\" \
+          vendor/phpunit/phpunit/phpunit -c vendor/typo3/testing-framework/Resources/Core/Build/UnitTests.xml --order-by=random ${EXTRA_TEST_OPTIONS} ${PHPUNIT_RANDOM} ${TEST_FILE};
+        else
+          XDEBUG_MODE=\"debug,develop\" \
+          XDEBUG_TRIGGER=\"foo\" \
+          XDEBUG_CONFIG=\"client_port=${PHP_XDEBUG_PORT} client_host=host.docker.internal\" \
+          vendor/phpunit/phpunit/phpunit -c vendor/typo3/testing-framework/Resources/Core/Build/UnitTests.xml --order-by=random ${EXTRA_TEST_OPTIONS} ${PHPUNIT_RANDOM} ${TEST_FILE};
         fi
       "
