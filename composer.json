@@ -14,7 +14,8 @@
 		"codeception/module-asserts": "^1.1",
 		"codeception/module-webdriver": "^1.0.1",
 		"codeception/codeception": "^4.0",
-		"typo3/testing-framework": "~6.2.3"
+		"phpunit/phpunit": "^8.5.21",
+		"typo3/testing-framework": "^6.15.1"
 	},
 	"suggest": {
 		"de-swebhosting/php-codestyle": "Currently required to run t3_check_codestyle.sh"
@@ -22,13 +23,6 @@
 	"autoload": {
 		"psr-4": {
 			"De\\SWebhosting\\Buildtools\\": "src/"
-		}
-	},
-	"extra": {
-		"typo3/class-alias-loader": {
-			"class-alias-maps": [
-				"legacy/ClassAliasMap.php"
-			]
 		}
 	}
 }
