@@ -1,7 +1,9 @@
 version: '2.3'
 services:
   chrome:
-    image: selenium/standalone-chrome:3.12
+    image: selenium/standalone-chrome:4.0.0-20211102
+    tmpfs:
+      - /dev/shm:rw,nosuid,nodev,noexec,relatime
 
   mysql:
     image: mysql:${MYSQL_VERSION}
@@ -63,7 +65,7 @@ services:
   memcached1-5:
     image: memcached:1.5-alpine
 
-  prepare_acceptance_backend_mariadb:
+  prepare_acceptance_application_mariadb:
     image: alpine:3.8
     links:
       - mariadb
@@ -80,7 +82,7 @@ services:
         done;
         echo Database is up;
       "
-  acceptance_backend_mariadb:
+  acceptance_application_mariadb:
     image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
     user: "${HOST_UID}"
     environment:
@@ -101,9 +103,9 @@ services:
         php -v | grep '^PHP'
         if [ ${CHUNKS} -gt 0 ]; then
           echo \"Running chunk ${THISCHUNK}\"
-          COMMAND=\"bin/codecept run Backend -d -g AcceptanceTests-Job-${THISCHUNK} -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} ${TEST_FILE} --html reports.html\"
+          COMMAND=\"bin/codecept run Application -d -g AcceptanceTests-Job-${THISCHUNK} -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} ${TEST_FILE} --xml reports.xml --html reports.html\"
         else
-          COMMAND=\"bin/codecept run Backend -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} ${TEST_FILE} --html reports.html\"
+          COMMAND=\"bin/codecept run Application -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} ${TEST_FILE} --xml reports.xml --html reports.html\"
         fi
         mkdir -p Web/typo3temp/var/tests/
         if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
@@ -116,7 +118,7 @@ services:
           $${COMMAND};
         fi
       "
-  prepare_acceptance_backend_mysql:
+  prepare_acceptance_application_mysql:
     image: alpine:3.8
     links:
       - mysql
@@ -133,7 +135,7 @@ services:
         done;
         echo Database is up;
       "
-  acceptance_backend_mysql:
+  acceptance_application_mysql:
     image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
     user: "${HOST_UID}"
     environment:
@@ -154,9 +156,9 @@ services:
         php -v | grep '^PHP'
         if [ ${CHUNKS} -gt 0 ]; then
           echo \"Running chunk ${THISCHUNK}\"
-          COMMAND=\"bin/codecept run Backend -d -g AcceptanceTests-Job-${THISCHUNK} -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} ${TEST_FILE} --html reports.html\"
+          COMMAND=\"bin/codecept run Application -d -g AcceptanceTests-Job-${THISCHUNK} -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} ${TEST_FILE} --xml reports.xml --html reports.html\"
         else
-          COMMAND=\"bin/codecept run Backend -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} ${TEST_FILE} --html reports.html\"
+          COMMAND=\"bin/codecept run Application -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} ${TEST_FILE} --xml reports.xml --html reports.html\"
         fi
         mkdir -p Web/typo3temp/var/tests/
         if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
@@ -169,7 +171,7 @@ services:
           $${COMMAND};
         fi
       "
-  prepare_acceptance_backend_postgres:
+  prepare_acceptance_application_postgres:
     image: alpine:3.8
     links:
       - postgres
@@ -186,7 +188,7 @@ services:
         done;
         echo Database is up;
       "
-  acceptance_backend_postgres:
+  acceptance_application_postgres:
     image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
     user: "${HOST_UID}"
     volumes:
@@ -210,9 +212,9 @@ services:
         php -v | grep '^PHP'
         if [ ${CHUNKS} -gt 0 ]; then
           echo \"Running chunk ${THISCHUNK}\"
-          COMMAND=\"bin/codecept run Backend -d -g AcceptanceTests-Job-${THISCHUNK} -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} ${TEST_FILE} --html reports.html\"
+          COMMAND=\"bin/codecept run Application -d -g AcceptanceTests-Job-${THISCHUNK} -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} ${TEST_FILE} --xml reports.xml --html reports.html\"
         else
-          COMMAND=\"bin/codecept run Backend -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} ${TEST_FILE} --html reports.html\"
+          COMMAND=\"bin/codecept run Application -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} ${TEST_FILE} --xml reports.xml --html reports.html\"
         fi
         mkdir -p Web/typo3temp/var/tests/
         if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
@@ -263,12 +265,12 @@ services:
         mkdir -p Web/typo3temp/var/tests/
         if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
           XDEBUG_MODE=\"off\" \
-          bin/codecept run Install -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} --env=mysql --html reports.html
+          bin/codecept run Install -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml --env=mysql --xml reports.xml --html reports.html
         else
           XDEBUG_MODE=\"debug,develop\" \
           XDEBUG_TRIGGER=\"foo\" \
           XDEBUG_CONFIG=\"client_port=${PHP_XDEBUG_PORT} client_host=host.docker.internal\" \
-          bin/codecept run Install -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} --env=mysql --html reports.html
+          bin/codecept run Install -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml --env=mysql --xml reports.xml --html reports.html
         fi
       "
   prepare_acceptance_install_mariadb:
@@ -309,12 +311,12 @@ services:
         mkdir -p Web/typo3temp/var/tests/
         if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
           XDEBUG_MODE=\"off\" \
-          bin/codecept run Install -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} --env=mysql --html reports.html
+          bin/codecept run Install -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} --env=mysql --xml reports.xml --html reports.html
         else
           XDEBUG_MODE=\"debug,develop\" \
           XDEBUG_TRIGGER=\"foo\" \
           XDEBUG_CONFIG=\"client_port=${PHP_XDEBUG_PORT} client_host=host.docker.internal\" \
-          bin/codecept run Install -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} --env=mysql --html reports.html
+          bin/codecept run Install -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} --env=mysql --xml reports.xml --html reports.html
         fi
       "
   prepare_acceptance_install_postgres:
@@ -355,12 +357,12 @@ services:
         mkdir -p Web/typo3temp/var/tests/
         if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
           XDEBUG_MODE=\"off\" \
-          bin/codecept run Install -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} --env=postgresql --html reports.html
+          bin/codecept run Install -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} --env=postgresql --xml reports.xml --html reports.html
         else
           XDEBUG_MODE=\"debug,develop\" \
           XDEBUG_TRIGGER=\"foo\" \
           XDEBUG_CONFIG=\"client_port=${PHP_XDEBUG_PORT} client_host=host.docker.internal\" \
-          bin/codecept run Install -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} --env=postgresql --html reports.html
+          bin/codecept run Install -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} --env=postgresql --xml reports.xml --html reports.html
         fi
       "
   prepare_acceptance_install_sqlite:
@@ -388,12 +390,12 @@ services:
         mkdir -p Web/typo3temp/var/tests/
         if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
           XDEBUG_MODE=\"off\" \
-          bin/codecept run Install -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} --env=sqlite --html reports.html
+          bin/codecept run Install -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} --env=sqlite --xml reports.xml --html reports.html
         else
           XDEBUG_MODE=\"debug,develop\" \
           XDEBUG_TRIGGER=\"foo\" \
           XDEBUG_CONFIG=\"client_port=${PHP_XDEBUG_PORT} client_host=host.docker.internal\" \
-          bin/codecept run Install -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} --env=sqlite --html reports.html
+          bin/codecept run Install -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} --env=sqlite --xml reports.xml --html reports.html
         fi
       "
   cgl_all:
@@ -417,7 +419,7 @@ services:
       - ${CORE_ROOT}:${CORE_ROOT}
     working_dir: ${CORE_ROOT}
     environment:
-      COMPOSER_ROOT_VERSION: "10.4"
+      COMPOSER_ROOT_VERSION: "11.5"
       COMPOSER_CACHE_DIR: ".cache/composer"
     command: >
       /bin/sh -c "
@@ -480,7 +482,7 @@ services:
         php -v | grep '^PHP'
         if [ ${CHUNKS} -gt 0 ]; then
           echo \"Running chunk ${THISCHUNK}\"
-          COMMAND=\"vendor/phpunit/phpunit/phpunit -c Build/FunctionalTests-Job-${THISCHUNK}.xml ${EXTRA_TEST_OPTIONS} ${TEST_FILE}\"
+          COMMAND=\"vendor/phpunit/phpunit/phpunit -c Build/phpunit/FunctionalTests-Job-${THISCHUNK}.xml ${EXTRA_TEST_OPTIONS} ${TEST_FILE}\"
         else
           COMMAND=\"vendor/phpunit/phpunit/phpunit -c vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests.xml ${EXTRA_TEST_OPTIONS} ${TEST_FILE}\"
         fi
@@ -534,7 +536,7 @@ services:
         php -v | grep '^PHP'
         if [ ${CHUNKS} -gt 0 ]; then
           echo \"Running chunk ${THISCHUNK}\"
-          COMMAND=\"vendor/phpunit/phpunit/phpunit -c Build/FunctionalTests-Job-${THISCHUNK}.xml ${EXTRA_TEST_OPTIONS} ${TEST_FILE}\"
+          COMMAND=\"vendor/phpunit/phpunit/phpunit -c Build/phpunit/FunctionalTests-Job-${THISCHUNK}.xml ${EXTRA_TEST_OPTIONS} ${TEST_FILE}\"
         else
           COMMAND=\"vendor/phpunit/phpunit/phpunit -c vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests.xml ${EXTRA_TEST_OPTIONS} ${TEST_FILE}\"
         fi
@@ -590,7 +592,7 @@ services:
         php -v | grep '^PHP'
         if [ ${CHUNKS} -gt 0 ]; then
           echo \"Running chunk ${THISCHUNK}\"
-          COMMAND=\"vendor/phpunit/phpunit/phpunit -c Build/FunctionalTests-Job-${THISCHUNK}.xml ${EXTRA_TEST_OPTIONS} --exclude-group not-mssql ${TEST_FILE}\"
+          COMMAND=\"vendor/phpunit/phpunit/phpunit -c Build/phpunit/FunctionalTests-Job-${THISCHUNK}.xml ${EXTRA_TEST_OPTIONS} --exclude-group not-mssql ${TEST_FILE}\"
         else
           COMMAND=\"vendor/phpunit/phpunit/phpunit -c vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests.xml ${EXTRA_TEST_OPTIONS} --exclude-group not-mssql ${TEST_FILE}\"
         fi
@@ -644,7 +646,7 @@ services:
         php -v | grep '^PHP'
         if [ ${CHUNKS} -gt 0 ]; then
           echo \"Running chunk ${THISCHUNK}\"
-          COMMAND=\"vendor/phpunit/phpunit/phpunit -c Build/FunctionalTests-Job-${THISCHUNK}.xml ${EXTRA_TEST_OPTIONS} --exclude-group not-postgres ${TEST_FILE}\"
+          COMMAND=\"vendor/phpunit/phpunit/phpunit -c Build/phpunit/FunctionalTests-Job-${THISCHUNK}.xml ${EXTRA_TEST_OPTIONS} --exclude-group not-postgres ${TEST_FILE}\"
         else
           COMMAND=\"vendor/phpunit/phpunit/phpunit -c vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests.xml ${EXTRA_TEST_OPTIONS} --exclude-group not-postgres ${TEST_FILE}\"
         fi
@@ -688,7 +690,7 @@ services:
         php -v | grep '^PHP'
         if [ ${CHUNKS} -gt 0 ]; then
           echo \"Running chunk ${THISCHUNK}\"
-          COMMAND=\"vendor/phpunit/phpunit/phpunit -c Build/FunctionalTests-Job-${THISCHUNK}.xml ${EXTRA_TEST_OPTIONS} --exclude-group not-sqlite ${TEST_FILE}\"
+          COMMAND=\"vendor/phpunit/phpunit/phpunit -c Build/phpunit/FunctionalTests-Job-${THISCHUNK}.xml ${EXTRA_TEST_OPTIONS} --exclude-group not-sqlite ${TEST_FILE}\"
         else
           COMMAND=\"vendor/phpunit/phpunit/phpunit -c vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests.xml ${EXTRA_TEST_OPTIONS} --exclude-group not-sqlite ${TEST_FILE}\"
         fi
