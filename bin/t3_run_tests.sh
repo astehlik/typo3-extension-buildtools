@@ -134,14 +134,15 @@ fi
 
 # Go to the directory this script is located, so everything else is relative
 # to this dir, no matter from where this script is called.
-THIS_SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+THIS_SCRIPT_DIR="$( cd "$( dirname "`readlink -f ${BASH_SOURCE[0]}`" )" >/dev/null && pwd )"
 cd "$THIS_SCRIPT_DIR" || exit 1
 
+. script.inc.sh
+
 # Go to directory that contains the local docker-compose.yml file
-cd ../vendor/de-swebhosting/typo3-extension-buildtools/testing-docker || exit 1
+cd ${THIS_SCRIPT_DIR}/../testing-docker || exit 1
 
 # Option defaults
-ROOT_DIR=`readlink -f ${PWD}/../../../../../`
 TEST_SUITE="unit"
 ACCEPTANCE_TEST_SUITE="Backend"
 DBMS="mariadb"
