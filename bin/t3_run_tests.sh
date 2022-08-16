@@ -29,6 +29,7 @@ setUpDockerComposeDotEnv() {
         echo "TEST_FILE=${TEST_FILE}"
         echo "PHP_XDEBUG_ON=${PHP_XDEBUG_ON}"
         echo "PHP_XDEBUG_PORT=${PHP_XDEBUG_PORT}"
+        echo "PHP_XDEBUG_MODE=${PHP_XDEBUG_MODE}"
         echo "DOCKER_PHP_IMAGE=${DOCKER_PHP_IMAGE}"
         echo "EXTRA_TEST_OPTIONS=${EXTRA_TEST_OPTIONS}"
         echo "SCRIPT_VERBOSE=${SCRIPT_VERBOSE}"
@@ -180,6 +181,9 @@ Options:
         Send xdebug information to a different port than default 9003 if an IDE like PhpStorm
         is not listening on default port.
 
+    -z <mode>
+        Override the default Xdebug mode "debug,develop"
+
     -o <number>
         Only with -s unitRandom
         Set specific random seed to replay a random run in this order again. The phpunit randomizer
@@ -271,6 +275,7 @@ DBMS="mariadb"
 PHP_VERSION="7.2"
 PHP_XDEBUG_ON=0
 PHP_XDEBUG_PORT=9003
+PHP_XDEBUG_MODE="debug,develop"
 EXTRA_TEST_OPTIONS=""
 SCRIPT_VERBOSE=0
 PHPUNIT_RANDOM=""
@@ -288,7 +293,7 @@ OPTIND=1
 # Array for invalid options
 INVALID_OPTIONS=();
 # Simple option parsing based on getopts (! not getopt)
-while getopts ":a:s:c:d:i:j:k:p:e:xy:o:nhuv" OPT; do
+while getopts ":a:s:c:d:i:j:k:p:e:xyz:o:nhuv" OPT; do
     case ${OPT} in
         s)
             TEST_SUITE=${OPTARG}
@@ -337,6 +342,9 @@ while getopts ":a:s:c:d:i:j:k:p:e:xy:o:nhuv" OPT; do
             ;;
         x)
             PHP_XDEBUG_ON=1
+            ;;
+        z)
+            PHP_XDEBUG_MODE=${OPTARG}
             ;;
         y)
             PHP_XDEBUG_PORT=${OPTARG}
