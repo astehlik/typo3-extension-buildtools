@@ -66,7 +66,7 @@ echo "Making sure version number matches in ext_emconf.php"
 assertVersionNumberInFile ext_emconf.php
 
 echo "Cleanup Git repository..."
-git reset --hard HEAD && git clean -fx
+git reset --hard HEAD && git clean -fdx
 
 cd ..
 
