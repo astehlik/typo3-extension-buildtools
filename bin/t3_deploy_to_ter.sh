@@ -6,7 +6,7 @@ if hash phpenv 2>/dev/null; then
     phpenv config-rm xdebug.ini
 fi
 
-THIS_SCRIPT_DIR="$( cd "$( dirname "`readlink -f ${BASH_SOURCE[0]}`" )" >/dev/null && pwd )"
+THIS_SCRIPT_DIR="$( cd "$( dirname "$(readlink -f "${BASH_SOURCE[0]}")" )" >/dev/null && pwd )"
 cd "$THIS_SCRIPT_DIR" || exit 1
 
 if [[ -z "${TYPO3_EXTENSION_KEY}" ]]; then
@@ -33,7 +33,7 @@ fi
 
 cd "${ROOT_DIR}"
 
-tagMessage="`git tag -n10 -l ${TRAVIS_TAG} | sed 's/^v[0-9.]*[ ]*//g'`"
+tagMessage="$(git tag -n10 -l "${TRAVIS_TAG}" | sed 's/^v[0-9.]*[ ]*//g')"
 
 if [[ -z "$tagMessage" ]]; then
     echo "The tag message could not be detected or was empty."
@@ -42,7 +42,7 @@ fi
 
 echo "Extracted tag message: $tagMessage"
 
-buildDirectoryName=`basename $PWD`
+buildDirectoryName=$(basename "$PWD")
 echo "Detected build directory name $buildDirectoryName"
 
 versionNumber="${TRAVIS_TAG#v}"

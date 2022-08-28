@@ -2,7 +2,7 @@
 
 set -e
 
-THIS_SCRIPT_DIR="$( cd "$( dirname "`readlink -f ${BASH_SOURCE[0]}`" )" >/dev/null && pwd )"
+THIS_SCRIPT_DIR="$( cd "$( dirname "$(readlink -f "${BASH_SOURCE[0]}")" )" >/dev/null && pwd )"
 cd "$THIS_SCRIPT_DIR" || exit 1
 
 . script.inc.sh
@@ -36,8 +36,8 @@ fi
 
 git commit -m "[TASK] Release version $release"
 
-git flow release start ${release}
+git flow release start "${release}"
 
-git flow release finish ${release}
+git flow release finish "${release}"
 
 echo "Check if everything is OK, then push..."
