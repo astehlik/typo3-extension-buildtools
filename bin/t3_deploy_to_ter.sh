@@ -66,7 +66,7 @@ echo "Making sure version number matches in ext_emconf.php"
 assertVersionNumberInFile ext_emconf.php
 
 echo "Cleanup Git repository..."
-git reset --hard HEAD && git clean -fx
+git reset --hard HEAD && git clean -fdx
 
 cd ..
 
@@ -77,7 +77,7 @@ fi
 
 echo "Installing TYPO3 repository client..."
 rm typo3-repository-client -Rf
-composer create-project --no-dev namelesscoder/typo3-repository-client:2.0.x-dev typo3-repository-client --remove-vcs --prefer-dist --no-dev --no-interaction
+composer create-project --no-dev namelesscoder/typo3-repository-client typo3-repository-client --remove-vcs --prefer-dist --no-dev --no-interaction
 
 echo "Uploading release ${TRAVIS_TAG} to TER"
 echo "Tag message: ${tagMessage}"
