@@ -1137,7 +1137,7 @@ services:
           set -x
         fi
         php -v | grep '^PHP'
-        find typo3/ -name \\*.php -print0 | xargs -0 -n1 -P4 php -dxdebug.mode=off -l >/dev/null
+        find . -name \\*.php ! -path "./.Build/\\*" -print0 | xargs -0 -n1 -P4 php -dxdebug.mode=off -l >/dev/null
       "
 
   lint_scss:
