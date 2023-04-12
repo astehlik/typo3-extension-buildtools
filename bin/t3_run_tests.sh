@@ -29,6 +29,7 @@ setUpDockerComposeDotEnv() {
         echo "TEST_FILE=${TEST_FILE}"
         echo "PHP_XDEBUG_ON=${PHP_XDEBUG_ON}"
         echo "PHP_XDEBUG_PORT=${PHP_XDEBUG_PORT}"
+        echo "PHP_XDEBUG_MODE=${PHP_XDEBUG_MODE}"
         echo "DOCKER_PHP_IMAGE=${DOCKER_PHP_IMAGE}"
         echo "EXTRA_TEST_OPTIONS=${EXTRA_TEST_OPTIONS}"
         echo "SCRIPT_VERBOSE=${SCRIPT_VERBOSE}"
@@ -41,6 +42,9 @@ setUpDockerComposeDotEnv() {
         echo "PHP_VERSION=${PHP_VERSION}"
         echo "CHUNKS=${CHUNKS}"
         echo "THISCHUNK=${THISCHUNK}"
+        echo "DOCKER_SELENIUM_IMAGE=${DOCKER_SELENIUM_IMAGE}"
+        echo "IS_CORE_CI=${IS_CORE_CI}"
+        echo "PHPSTAN_CONFIG_FILE=${PHPSTAN_CONFIG_FILE}"
     } > .env
 }
 
@@ -77,7 +81,54 @@ handleDbmsAndDriverOptions() {
     esac
 }
 
+cleanBuildFiles() {
+    # > builds
+    echo -n "Clean builds ... " ; rm -rf \
+        ../../../Build/JavaScript \
+        ../../../Build/node_modules ; \
+        echo "done"
+}
+
+cleanCacheFiles() {
+    # > caches
+    echo -n "Clean caches ... " ; rm -rf \
+        ../../../.cache \
+        ../../../Build/.cache \
+        ../../../Build/composer/.cache/ \
+        ../../../.php-cs-fixer.cache ; \
+        echo "done"
+}
+
+cleanTestFiles() {
+    # > composer distribution test
+    echo -n "Clean composer distribution test ... " ; rm -rf \
+        ../../../Build/composer/composer.json \
+        ../../../Build/composer/composer.lock \
+        ../../../Build/composer/public/index.php \
+        ../../../Build/composer/public/typo3 \
+        ../../../Build/composer/public/typo3conf/ext \
+        ../../../Build/composer/var/ \
+        ../../../Build/composer/vendor/ ; \
+       echo "done"
+
+    # > test related
+    echo -n "Clean test related files ... " ; rm -rf \
+        ../../../Build/phpunit/FunctionalTests-Job-*.xml \
+        ../../../typo3/sysext/core/Tests/Acceptance/AcceptanceTests-Job-* \
+        ../../../typo3/sysext/core/Tests/Acceptance/Support/_generated \
+        ../../../typo3temp/var/tests/ ; \
+        echo "done"
+}
+
+cleanRenderedDocumentationFiles() {
+    # > caches
+    echo -n "Clean rendered documentation files ... " ; rm -rf \
+        ../../../typo3/sysext/*/Documentation-GENERATED-temp ; \
+        echo "done"
+}
+
 # Load help text into $HELP
+# @todo Remove xdebug / php8.2 note after PHP8.2 image contains working xdebug.
 read -r -d '' HELP <<EOF
 TYPO3 core test runner. Execute acceptance, unit, functional and other test suites in
 a docker based test environment. Handles execution of single test files, sending
@@ -88,24 +139,55 @@ a recent docker-compose (tested >=1.21.2) is needed.
 
 Usage: $0 [options] [file]
 
-No arguments: Run all unit tests with PHP 7.2
+No arguments: Run all unit tests with PHP 7.4
 
 Options:
     -s <...>
         Specifies which test suite to run
-            - acceptance: main backend acceptance tests
+            - acceptance: main application acceptance tests
+            - acceptanceInstall: installation acceptance tests, only with -d mariadb|postgres|sqlite
+            - buildCss: execute scss to css builder
+            - buildJavascript: execute typescript to javascript builder
+            - cgl: test and fix all core php files
             - cglGit: test and fix latest committed patch for CGL compliance
-            - cglAll: test and fix all core php files
+            - checkAnnotations: check php code for allowed annotations
+            - checkBom: check UTF-8 files do not contain BOM
+            - checkComposer: check composer.json files for version integrity
+            - checkExceptionCodes: test core for duplicate exception codes
+            - checkExtensionScannerRst: test all .rst files referenced by extension scanner exist
+            - checkFilePathLength: test core file paths do not exceed maximum length
+            - checkGitSubmodule: test core git has no sub modules defined
+            - checkGruntClean: Verify "grunt build" is clean. Warning: Executes git commands! Usually used in CI only.
+            - checkNamespaceIntegrity: Verify namespace integrity in class and test code files are in good shape.
+            - checkPermissions: test some core files for correct executable bits
+            - checkRst: test .rst files for integrity
+            - checkTestMethodsPrefix: check tests methods do not start with "test"
+            - clean: clean up build, cache and testing related files and folders
+            - cleanBuild: clean up build related files and folders
+            - cleanCache: clean up cache related files and folders
+            - cleanRenderedDocumentation: clean up rendered documentation files and folders (Documentation-GENERATED-temp)
+            - cleanTests: clean up test related files and folders
             - composerInstall: "composer install"
+            - composerInstallMax: "composer update", with no platform.php config.
+            - composerInstallMin: "composer update --prefer-lowest", with platform.php set to PHP version x.x.0.
+            - composerTestDistribution: "composer update" in Build/composer to verify core dependencies
             - composerValidate: "composer validate"
-            - functional: functional tests
-            - install: installation acceptance tests, only with -d mariadb|postgres|sqlite
-            - lint: PHP linting
+            - functional: PHP functional tests
+            - functionalDeprecated: deprecated PHP functional tests
+            - lintPhp: PHP linting
+            - lintScss: SCSS linting
+            - lintTypescript: TS linting
+            - lintHtml: HTML linting
+            - listExceptionCodes: list core exception codes in JSON format
+            - phpstan: phpstan tests
+            - phpstanGenerateBaseline: regenerate phpstan baseline, handy after phpstan updates
             - unit (default): PHP unit tests
+            - unitDeprecated: deprecated PHP unit tests
+            - unitJavascript: JavaScript unit tests
             - unitRandom: PHP unit tests in random order, add -o <number> to use specific seed
 
     -a <mysqli|pdo_mysql|sqlsrv|pdo_sqlsrv>
-        Only with -s functional
+        Only with -s functional|functionalDeprecated
         Specifies to use another driver, following combinations are available:
             - mysql
                 - mysqli (default)
@@ -117,16 +199,16 @@ Options:
                 - sqlsrv (default)
                 - pdo_sqlsrv
 
-    -d <mariadb|mysql|mssql|postgres|sqlite>
-        Only with -s install|functional|acceptance
+    -d <sqlite|mariadb|mysql|postgres|mssql>
+        Only with -s functional|functionalDeprecated|acceptance|acceptanceInstall
         Specifies on which DBMS tests are performed
-            - mariadb (default): use mariadb
+            - sqlite: (default) use sqlite
+            - mariadb: use mariadb
             - mysql: use MySQL server
             - mssql: use mssql microsoft sql server
             - postgres: use postgres
-            - sqlite: use sqlite
 
-    -i <10.1|10.2|10.3|10.4|10.5>
+    -i <10.1|10.2|10.3|10.4|10.5|10.6|10.7>
         Only with -d mariadb
         Specifies on which version of mariadb tests are performed
             - 10.1
@@ -134,6 +216,8 @@ Options:
             - 10.3 (default)
             - 10.4
             - 10.5
+            - 10.6
+            - 10.7
 
     -j <5.5|5.6|5.7|8.0>
         Only with -d mysql
@@ -143,35 +227,37 @@ Options:
             - 5.7
             - 8.0
 
-    -k <9.6|10|11|12|13>
+    -k <9.6|10|11|12|13|14>
         Only with -d postgres
         Specifies on which version of postgres tests are performed
             - 9.6
             - 10 (default)
             - 11
             - 12
-             -13
+            - 13
+            - 14
 
     -c <chunk/numberOfChunks>
         Only with -s functional|acceptance
         Hack functional or acceptance tests into #numberOfChunks pieces and run tests of #chunk.
         Example -c 3/13
 
-    -p <7.2|7.3|7.4>
+    -p <7.4|8.0|8.1|8.2>
         Specifies the PHP minor version to be used
-            - 7.2 (default): use PHP 7.2
-            - 7.3: use PHP 7.3
-            - 7.4: use PHP 7.4
+            - 7.4: (default) use PHP 7.4
+            - 8.0: use PHP 8.0
+            - 8.1: use PHP 8.1
+            - 8.2: use PHP 8.2 (note that xdebug is currently not available for PHP8.2)
 
-    -e "<phpunit or codeception options>"
-        Only with -s functional|unit|unitDeprecated|unitRandom|acceptance|install
+    -e "<phpunit options>"
+        Only with -s functional|functionalDeprecated|unit|unitDeprecated|unitRandom|acceptance
         Additional options to send to phpunit (unit & functional tests) or codeception (acceptance
         tests). For phpunit, options starting with "--" must be added after options starting with "-".
         Example -e "-v --filter canRetrieveValueWithGP" to enable verbose output AND filter tests
         named "canRetrieveValueWithGP"
 
     -x
-        Only with -s functional|unit|unitDeprecated|unitRandom|acceptance|install
+        Only with -s functional|functionalDeprecated|unit|unitDeprecated|unitRandom|acceptance|acceptanceInstall
         Send information to host instance for test or system under test break points. This is especially
         useful if a local PhpStorm instance is listening on default xdebug port 9003. A different port
         can be selected with -y
@@ -180,6 +266,9 @@ Options:
         Send xdebug information to a different port than default 9003 if an IDE like PhpStorm
         is not listening on default port.
 
+    -z <mode>
+        Override the default Xdebug mode "debug,develop"
+
     -o <number>
         Only with -s unitRandom
         Set specific random seed to replay a random run in this order again. The phpunit randomizer
@@ -187,14 +276,14 @@ Options:
         replay the unit tests in that order.
 
     -n
-        Only with -s cglGit|cglAll
+        Only with -s cgl|cglGit
         Activate dry-run in CGL check that does not actively change files and only prints broken ones.
 
     -u
-        Update existing typo3/core-testing-*:latest docker images. Maintenance call to docker pull latest
-        versions of the main php images. The images are updated once in a while and only the youngest
-        ones are supported by core testing. Use this if weird test errors occur. Also removes obsolete
-        image versions of typo3/core-testing-*.
+        Update existing typo3/core-testing-*:latest docker images and remove dangling local docker volumes.
+        Maintenance call to docker pull latest versions of the main php images. The images are updated once
+        in a while and only the latest ones are supported by core testing. Use this if weird test errors occur.
+        Also removes obsolete image versions of typo3/core-testing-*.
 
     -v
         Enable verbose script output. Shows variables and docker commands.
@@ -203,55 +292,42 @@ Options:
         Show this help.
 
 Examples:
-    # Run all core unit tests using PHP 7.2
+    # Run all core unit tests using PHP 7.4
     ./Build/Scripts/runTests.sh
     ./Build/Scripts/runTests.sh -s unit
 
     # Run all core units tests and enable xdebug (have a PhpStorm listening on port 9003!)
     ./Build/Scripts/runTests.sh -x
 
-    # Run unit tests in phpunit verbose mode with xdebug on PHP 7.3 and filter for test canRetrieveValueWithGP
-    ./Build/Scripts/runTests.sh -x -p 7.3 -e "-v --filter canRetrieveValueWithGP"
+    # Run unit tests in phpunit verbose mode with xdebug on PHP 8.0 and filter for test canRetrieveValueWithGP
+    ./Build/Scripts/runTests.sh -x -p 8.0 -e "-v --filter canRetrieveValueWithGP"
 
     # Run functional tests in phpunit with a filtered test method name in a specified file
     # example will currently execute two tests, both of which start with the search term
     ./Build/Scripts/runTests.sh -s functional -e "--filter deleteContent" typo3/sysext/core/Tests/Functional/DataHandling/Regular/Modify/ActionTest.php
 
-    # Run unit tests with PHP 7.3 and have xdebug enabled
-    ./Build/Scripts/runTests.sh -x -p 7.3
+    # Run unit tests with PHP 8.0 and have xdebug enabled
+    ./Build/Scripts/runTests.sh -x -p 8.0
 
-    # Run functional tests on postgres with xdebug, php 7.3 and execute a restricted set of tests
-    ./Build/Scripts/runTests.sh -x -p 7.3 -s functional -d postgres typo3/sysext/core/Tests/Functional/Authentication
+    # Run functional tests on postgres with xdebug, php 8.0 and execute a restricted set of tests
+    ./Build/Scripts/runTests.sh -x -p 8.0 -s functional -d postgres typo3/sysext/core/Tests/Functional/Authentication
 
     # Run functional tests on mariadb 10.5
     ./Build/Scripts/runTests.sh -d mariadb -i 10.5
 
-    # Run install tests on mysql 8.0
-    .Build/Scripts/runTests.sh -d mysql -j 8.0
-
     # Run functional tests on postgres 11
-    ./Build/Scripts/runTests.sh -d postgres -k 11
+    ./Build/Scripts/runTests.sh -s functional -d postgres -k 11
 
-    # Run restricted set of backend acceptance tests
-    ./Build/Scripts/runTests.sh -s acceptance typo3/sysext/core/Tests/Acceptance/Backend/Login/BackendLoginCest.php
+    # Run restricted set of application acceptance tests
+    ./Build/Scripts/runTests.sh -s acceptance typo3/sysext/core/Tests/Acceptance/Application/Login/BackendLoginCest.php:loginButtonMouseOver
 
     # Run installer tests of a new instance on sqlite
-    ./Build/Scripts/runTests.sh -s install -d sqlite
+    ./Build/Scripts/runTests.sh -s acceptanceInstall -d sqlite
 EOF
 
 # Test if docker-compose exists, else exit out with error
 if ! type "docker-compose" > /dev/null; then
     echo "This script relies on docker and docker-compose. Please install" >&2
-    exit 1
-fi
-
-# docker-compose v2 is enabled by docker for mac as experimental feature without
-# asking the user. v2 is currently broken. Detect the version and error out.
-DOCKER_COMPOSE_VERSION=$(docker-compose version --short)
-DOCKER_COMPOSE_MAJOR=$(echo "$DOCKER_COMPOSE_VERSION" | cut -d'.' -f1 | tr -d 'v')
-if [ "$DOCKER_COMPOSE_MAJOR" -gt "1" ]; then
-    echo "docker-compose $DOCKER_COMPOSE_VERSION is currently broken and not supported by runTests.sh."
-    echo "If you are running Docker Desktop for MacOS/Windows disable 'Use Docker Compose V2 release candidate' (Settings > Experimental Features)"
     exit 1
 fi
 
@@ -267,10 +343,11 @@ cd ${THIS_SCRIPT_DIR}/../testing-docker || exit 1
 
 # Option defaults
 TEST_SUITE="unit"
-DBMS="mariadb"
-PHP_VERSION="7.2"
+DBMS="sqlite"
+PHP_VERSION="7.4"
 PHP_XDEBUG_ON=0
 PHP_XDEBUG_PORT=9003
+PHP_XDEBUG_MODE="debug,develop"
 EXTRA_TEST_OPTIONS=""
 SCRIPT_VERBOSE=0
 PHPUNIT_RANDOM=""
@@ -281,6 +358,24 @@ MYSQL_VERSION="5.5"
 POSTGRES_VERSION="10"
 CHUNKS=0
 THISCHUNK=0
+DOCKER_SELENIUM_IMAGE="selenium/standalone-chrome:4.0.0-20211102"
+IS_CORE_CI=0
+PHPSTAN_CONFIG_FILE="phpstan.local.neon"
+
+# ENV var "CI" is set by gitlab-ci. We use it here to distinct 'local' and 'CI' environment.
+if [ "$CI" == "true" ]; then
+    IS_CORE_CI=1
+    PHPSTAN_CONFIG_FILE="phpstan.ci.neon"
+fi
+
+# Detect arm64 and use a seleniarm image.
+# In a perfect world selenium would have a arm64 integrated, but that is not on the horizon.
+# So for the time being we have to use seleniarm image.
+ARCH=$(uname -m)
+if [ $ARCH = "arm64" ]; then
+    DOCKER_SELENIUM_IMAGE="seleniarm/standalone-chromium:4.1.2-20220227"
+    echo "Architecture" $ARCH "requires" $DOCKER_SELENIUM_IMAGE "to run acceptance tests."
+fi
 
 # Option parsing
 # Reset in case getopts has been used previously in the shell
@@ -288,7 +383,7 @@ OPTIND=1
 # Array for invalid options
 INVALID_OPTIONS=();
 # Simple option parsing based on getopts (! not getopt)
-while getopts ":a:s:c:d:i:j:k:p:e:xy:o:nhuv" OPT; do
+while getopts ":a:s:c:d:i:j:k:p:e:xyz:o:nhuv" OPT; do
     case ${OPT} in
         s)
             TEST_SUITE=${OPTARG}
@@ -310,7 +405,7 @@ while getopts ":a:s:c:d:i:j:k:p:e:xy:o:nhuv" OPT; do
             ;;
         i)
             MARIADB_VERSION=${OPTARG}
-            if ! [[ ${MARIADB_VERSION} =~ ^(10.1|10.2|10.3|10.4|10.5)$ ]]; then
+            if ! [[ ${MARIADB_VERSION} =~ ^(10.1|10.2|10.3|10.4|10.5|10.6|10.7)$ ]]; then
                 INVALID_OPTIONS+=("${OPTARG}")
             fi
             ;;
@@ -322,13 +417,13 @@ while getopts ":a:s:c:d:i:j:k:p:e:xy:o:nhuv" OPT; do
             ;;
         k)
             POSTGRES_VERSION=${OPTARG}
-            if ! [[ ${POSTGRES_VERSION} =~ ^(9.6|10|11|12|13)$ ]]; then
+            if ! [[ ${POSTGRES_VERSION} =~ ^(9.6|10|11|12|13|14)$ ]]; then
                 INVALID_OPTIONS+=("${OPTARG}")
             fi
             ;;
         p)
             PHP_VERSION=${OPTARG}
-            if ! [[ ${PHP_VERSION} =~ ^(7.2|7.3|7.4)$ ]]; then
+            if ! [[ ${PHP_VERSION} =~ ^(7.4|8.0|8.1|8.2)$ ]]; then
                 INVALID_OPTIONS+=("${OPTARG}")
             fi
             ;;
@@ -337,6 +432,9 @@ while getopts ":a:s:c:d:i:j:k:p:e:xy:o:nhuv" OPT; do
             ;;
         x)
             PHP_XDEBUG_ON=1
+            ;;
+        z)
+            PHP_XDEBUG_MODE=${OPTARG}
             ;;
         y)
             PHP_XDEBUG_PORT=${OPTARG}
@@ -377,7 +475,7 @@ if [ ${#INVALID_OPTIONS[@]} -ne 0 ]; then
     exit 1
 fi
 
-# Move "7.2" to "php72", the latter is the docker container name
+# Move "7.4" to "php74", the latter is the docker container name
 DOCKER_PHP_IMAGE=$(echo "php${PHP_VERSION}" | sed -e 's/\.//')
 
 # Set $1 to first mass argument, this is the optional test file or test directory to execute
@@ -402,6 +500,12 @@ fi
 # Suite execution
 case ${TEST_SUITE} in
     acceptance)
+        if [ "${DBMS}" == "sqlite" ]; then
+            # Dynamically switch from sqlite to mariadb since v11 currently does
+            # not support sqlite ac tests, but sqlite is default DBMS in runTests.sh.
+            # @todo: Drop this if when sqlite ac tests are allowed.
+            DBMS="mariadb"
+        fi
         handleDbmsAndDriverOptions
         setUpDockerComposeDotEnv
         if [ "${CHUNKS}" -gt 1 ]; then
@@ -410,23 +514,57 @@ case ${TEST_SUITE} in
         case ${DBMS} in
             mysql)
                 echo "Using driver: ${DATABASE_DRIVER}"
-                docker-compose run prepare_acceptance_backend_mysql
-                docker-compose run acceptance_backend_mysql
+                docker-compose run prepare_acceptance_application_mysql
+                docker-compose run acceptance_application_mysql
                 SUITE_EXIT_CODE=$?
                 ;;
             mariadb)
                 echo "Using driver: ${DATABASE_DRIVER}"
-                docker-compose run prepare_acceptance_backend_mariadb
-                docker-compose run acceptance_backend_mariadb
+                docker-compose run prepare_acceptance_application_mariadb
+                docker-compose run acceptance_application_mariadb
                 SUITE_EXIT_CODE=$?
                 ;;
             postgres)
-                docker-compose run prepare_acceptance_backend_postgres
-                docker-compose run acceptance_backend_postgres
+                docker-compose run prepare_acceptance_application_postgres
+                docker-compose run acceptance_application_postgres
                 SUITE_EXIT_CODE=$?
                 ;;
             *)
                 echo "Acceptance tests don't run with DBMS ${DBMS}" >&2
+                echo >&2
+                echo "call \".Build/Scripts/runTests.sh -h\" to display help and valid options" >&2
+                exit 1
+        esac
+        docker-compose down
+        ;;
+    acceptanceInstall)
+        handleDbmsAndDriverOptions
+        setUpDockerComposeDotEnv
+        case ${DBMS} in
+            mysql)
+                echo "Using driver: ${DATABASE_DRIVER}"
+                docker-compose run prepare_acceptance_install_mysql
+                docker-compose run acceptance_install_mysql
+                SUITE_EXIT_CODE=$?
+                ;;
+            mariadb)
+                echo "Using driver: ${DATABASE_DRIVER}"
+                docker-compose run prepare_acceptance_install_mariadb
+                docker-compose run acceptance_install_mariadb
+                SUITE_EXIT_CODE=$?
+                ;;
+            postgres)
+                docker-compose run prepare_acceptance_install_postgres
+                docker-compose run acceptance_install_postgres
+                SUITE_EXIT_CODE=$?
+                ;;
+            sqlite)
+                docker-compose run prepare_acceptance_install_sqlite
+                docker-compose run acceptance_install_sqlite
+                SUITE_EXIT_CODE=$?
+                ;;
+            *)
+                echo "Acceptance install tests don't run with DBMS ${DBMS}" >&2
                 echo >&2
                 echo "call \".Build/Scripts/runTests.sh -h\" to display help and valid options" >&2
                 exit 1
@@ -445,25 +583,31 @@ case ${TEST_SUITE} in
         SUITE_EXIT_CODE=$?
         docker-compose down
         ;;
-    cglGit)
-        setUpDockerComposeDotEnv
-        docker-compose run cgl_git
-        SUITE_EXIT_CODE=$?
-        docker-compose down
-        ;;
-    cglAll)
-        # Active dry-run for cglAll needs not "-n" but specific options
-        if [[ ! -z ${CGLCHECK_DRY_RUN} ]]; then
-            CGLCHECK_DRY_RUN="--dry-run --diff --diff-format udiff"
+    cgl)
+        # Active dry-run for cgl needs not "-n" but specific options
+        if [ -n "${CGLCHECK_DRY_RUN}" ]; then
+            CGLCHECK_DRY_RUN="--dry-run --diff"
         fi
         setUpDockerComposeDotEnv
         docker-compose run cgl_all
         SUITE_EXIT_CODE=$?
         docker-compose down
         ;;
+    cglGit)
+        setUpDockerComposeDotEnv
+        docker-compose run cgl_git
+        SUITE_EXIT_CODE=$?
+        docker-compose down
+        ;;
     checkAnnotations)
         setUpDockerComposeDotEnv
         docker-compose run check_annotations
+        SUITE_EXIT_CODE=$?
+        docker-compose down
+        ;;
+    checkTestMethodsPrefix)
+        setUpDockerComposeDotEnv
+        docker-compose run check_test_methods_prefix
         SUITE_EXIT_CODE=$?
         docker-compose down
         ;;
@@ -476,12 +620,6 @@ case ${TEST_SUITE} in
     checkComposer)
         setUpDockerComposeDotEnv
         docker-compose run check_composer
-        SUITE_EXIT_CODE=$?
-        docker-compose down
-        ;;
-    checkCsvFixtures)
-        setUpDockerComposeDotEnv
-        docker-compose run check_csv_fixtures
         SUITE_EXIT_CODE=$?
         docker-compose down
         ;;
@@ -515,6 +653,12 @@ case ${TEST_SUITE} in
         SUITE_EXIT_CODE=$?
         docker-compose down
         ;;
+    checkNamespaceIntegrity)
+        setUpDockerComposeDotEnv
+        docker-compose run check_namespace_integrity
+        SUITE_EXIT_CODE=$?
+        docker-compose down
+        ;;
     checkPermissions)
         setUpDockerComposeDotEnv
         docker-compose run check_permissions
@@ -526,6 +670,24 @@ case ${TEST_SUITE} in
         docker-compose run check_rst
         SUITE_EXIT_CODE=$?
         docker-compose down
+        ;;
+    clean)
+        cleanBuildFiles
+        cleanCacheFiles
+        cleanRenderedDocumentationFiles
+        cleanTestFiles
+        ;;
+    cleanBuild)
+        cleanBuildFiles
+        ;;
+    cleanCache)
+        cleanCacheFiles
+        ;;
+    cleanRenderedDocumentation)
+        cleanRenderedDocumentationFiles
+        ;;
+    cleanTests)
+        cleanTestFiles
         ;;
     composerInstall)
         setUpDockerComposeDotEnv
@@ -545,28 +707,22 @@ case ${TEST_SUITE} in
         SUITE_EXIT_CODE=$?
         docker-compose down
         ;;
+    composerTestDistribution)
+        setUpDockerComposeDotEnv
+        docker-compose run composer_test_distribution
+        SUITE_EXIT_CODE=$?
+        docker-compose down
+        ;;
     composerValidate)
         setUpDockerComposeDotEnv
         docker-compose run composer_validate
         SUITE_EXIT_CODE=$?
         docker-compose down
         ;;
-    docBlockCheck)
-        setUpDockerComposeDotEnv
-        docker-compose run doc_block_check
-        SUITE_EXIT_CODE=$?
-        docker-compose down
-        ;;
-    fixCsvFixtures)
-        setUpDockerComposeDotEnv
-        docker-compose run fix_csv_fixtures
-        SUITE_EXIT_CODE=$?
-        docker-compose down
-        ;;
     functional)
         handleDbmsAndDriverOptions
         setUpDockerComposeDotEnv
-        if [ "${CHUNKS}" -gt 1 ]; then
+        if [ "${CHUNKS}" -gt 0 ]; then
             docker-compose run functional_split
         fi
         case ${DBMS} in
@@ -611,49 +767,108 @@ case ${TEST_SUITE} in
         esac
         docker-compose down
         ;;
-    install)
+    functionalDeprecated)
         handleDbmsAndDriverOptions
         setUpDockerComposeDotEnv
         case ${DBMS} in
-            mysql)
-                echo "Using driver: ${DATABASE_DRIVER}"
-                docker-compose run prepare_acceptance_install_mysql
-                docker-compose run acceptance_install_mysql
-                SUITE_EXIT_CODE=$?
-                ;;
             mariadb)
                 echo "Using driver: ${DATABASE_DRIVER}"
-                docker-compose run prepare_acceptance_install_mariadb
-                docker-compose run acceptance_install_mariadb
+                docker-compose run prepare_functional_mariadb
+                docker-compose run functional_deprecated_mariadb
+                SUITE_EXIT_CODE=$?
+                ;;
+            mysql)
+                echo "Using driver: ${DATABASE_DRIVER}"
+                docker-compose run prepare_functional_mysql
+                docker-compose run functional_deprecated_mysql
+                SUITE_EXIT_CODE=$?
+                ;;
+            mssql)
+                echo "Using driver: ${DATABASE_DRIVER}"
+                docker-compose run prepare_functional_mssql2019latest
+                docker-compose run functional_deprecated_mssql2019latest
                 SUITE_EXIT_CODE=$?
                 ;;
             postgres)
-                docker-compose run prepare_acceptance_install_postgres
-                docker-compose run acceptance_install_postgres
+                docker-compose run prepare_functional_postgres
+                docker-compose run functional_deprecated_postgres
                 SUITE_EXIT_CODE=$?
                 ;;
             sqlite)
-                docker-compose run prepare_acceptance_install_sqlite
-                docker-compose run acceptance_install_sqlite
+                # sqlite has a tmpfs as typo3temp/var/tests/functional-sqlite-dbs/
+                # Since docker is executed as root (yay!), the path to this dir is owned by
+                # root if docker creates it. Thank you, docker. We create the path beforehand
+                # to avoid permission issues on host filesystem after execution.
+                mkdir -p "${CORE_ROOT}/typo3temp/var/tests/functional-sqlite-dbs/"
+                docker-compose run prepare_functional_sqlite
+                docker-compose run functional_deprecated_sqlite
                 SUITE_EXIT_CODE=$?
                 ;;
             *)
-                echo "Install tests don't run with DBMS ${DBMS}" >&2
+                echo "Deprecated functional tests don't run with DBMS ${DBMS}" >&2
                 echo >&2
                 echo "call \".Build/Scripts/runTests.sh -h\" to display help and valid options" >&2
                 exit 1
         esac
         docker-compose down
         ;;
-    lint)
+    lintPhp)
         setUpDockerComposeDotEnv
         docker-compose run lint_php
+        SUITE_EXIT_CODE=$?
+        docker-compose down
+        ;;
+    lintScss)
+        setUpDockerComposeDotEnv
+        docker-compose run lint_scss
+        SUITE_EXIT_CODE=$?
+        docker-compose down
+        ;;
+    lintTypescript)
+        setUpDockerComposeDotEnv
+        docker-compose run lint_typescript
+        SUITE_EXIT_CODE=$?
+        docker-compose down
+        ;;
+    lintHtml)
+        setUpDockerComposeDotEnv
+        docker-compose run lint_html
+        SUITE_EXIT_CODE=$?
+        docker-compose down
+        ;;
+    listExceptionCodes)
+        setUpDockerComposeDotEnv
+        docker-compose run list_exception_codes
+        SUITE_EXIT_CODE=$?
+        docker-compose down
+        ;;
+    phpstan)
+        setUpDockerComposeDotEnv
+        docker-compose run phpstan
+        SUITE_EXIT_CODE=$?
+        docker-compose down
+        ;;
+    phpstanGenerateBaseline)
+        setUpDockerComposeDotEnv
+        docker-compose run phpstan_generate_baseline
         SUITE_EXIT_CODE=$?
         docker-compose down
         ;;
     unit)
         setUpDockerComposeDotEnv
         docker-compose run unit
+        SUITE_EXIT_CODE=$?
+        docker-compose down
+        ;;
+    unitDeprecated)
+        setUpDockerComposeDotEnv
+        docker-compose run unitDeprecated
+        SUITE_EXIT_CODE=$?
+        docker-compose down
+        ;;
+    unitJavascript)
+        setUpDockerComposeDotEnv
+        docker-compose run unitJavascript
         SUITE_EXIT_CODE=$?
         docker-compose down
         ;;
@@ -664,10 +879,18 @@ case ${TEST_SUITE} in
         docker-compose down
         ;;
     update)
+        # prune unused, dangling local volumes
+        echo "> prune unused, dangling local volumes"
+        docker volume ls -q -f driver=local -f dangling=true | awk '$0 ~ /^[0-9a-f]{64}$/ { print }' | xargs -I {} docker volume rm {}
+        echo ""
         # pull typo3/core-testing-*:latest versions of those ones that exist locally
+        echo "> pull typo3/core-testing-*:latest versions of those ones that exist locally"
         docker images typo3/core-testing-*:latest --format "{{.Repository}}:latest" | xargs -I {} docker pull {}
+        echo ""
         # remove "dangling" typo3/core-testing-* images (those tagged as <none>)
+        echo "> remove \"dangling\" typo3/core-testing-* images (those tagged as <none>)"
         docker images typo3/core-testing-* --filter "dangling=true" --format "{{.ID}}" | xargs -I {} docker rmi {}
+        echo ""
         ;;
     *)
         echo "Invalid -s option argument ${TEST_SUITE}" >&2
@@ -704,13 +927,15 @@ if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
 fi
 echo "" >&2
 echo "###########################################################################" >&2
-if [[ ${TEST_SUITE} =~ ^(functional|install|acceptance)$ ]]; then
-    echo "Result of ${TEST_SUITE}" >&2
-    echo "PHP: ${PHP_VERSION}" >&2
-    echo "${DBMS_OUTPUT}" >&2
+echo "Result of ${TEST_SUITE}" >&2
+if [[ ${IS_CORE_CI} -eq 1 ]]; then
+    echo "Environment: CI" >&2
 else
-    echo "Result of ${TEST_SUITE}" >&2
-    echo "PHP: ${PHP_VERSION}" >&2
+    echo "Environment: local" >&2
+fi
+echo "PHP: ${PHP_VERSION}" >&2
+if [[ ${TEST_SUITE} =~ ^(functional|acceptance|acceptanceInstall)$ ]]; then
+    echo "${DBMS_OUTPUT}" >&2
 fi
 
 if [[ ${SUITE_EXIT_CODE} -eq 0 ]]; then
