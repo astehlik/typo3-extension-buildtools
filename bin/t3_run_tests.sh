@@ -57,7 +57,7 @@ handleDbmsAndDriverOptions() {
             if [ "${DATABASE_DRIVER}" != "mysqli" ] && [ "${DATABASE_DRIVER}" != "pdo_mysql" ]; then
                 echo "Invalid option -a ${DATABASE_DRIVER} with -d ${DBMS}" >&2
                 echo >&2
-                echo "call \".Build/Scripts/runTests.sh -h\" to display help and valid options" >&2
+                echo "call \"./.Build/bin/t3_run_tests.sh -h\" to display help and valid options" >&2
                 exit 1
             fi
             ;;
@@ -66,7 +66,7 @@ handleDbmsAndDriverOptions() {
             if [ "${DATABASE_DRIVER}" != "sqlsrv" ] && [ "${DATABASE_DRIVER}" != "pdo_sqlsrv" ]; then
                 echo "Invalid option -a ${DATABASE_DRIVER} with -d ${DBMS}" >&2
                 echo >&2
-                echo "call \".Build/Scripts/runTests.sh -h\" to display help and valid options" >&2
+                echo "call \"./.Build/bin/t3_run_tests.sh -h\" to display help and valid options" >&2
                 exit 1
             fi
             ;;
@@ -74,7 +74,7 @@ handleDbmsAndDriverOptions() {
             if [ -n "${DATABASE_DRIVER}" ]; then
                 echo "Invalid option -a ${DATABASE_DRIVER} with -d ${DBMS}" >&2
                 echo >&2
-                echo "call \".Build/Scripts/runTests.sh -h\" to display help and valid options" >&2
+                echo "call \"./.Build/bin/t3_run_tests.sh -h\" to display help and valid options" >&2
                 exit 1
             fi
             ;;
@@ -293,36 +293,36 @@ Options:
 
 Examples:
     # Run all core unit tests using PHP 7.4
-    ./Build/Scripts/runTests.sh
-    ./Build/Scripts/runTests.sh -s unit
+    ./.Build/bin/t3_run_tests.sh
+    ./.Build/bin/t3_run_tests.sh -s unit
 
     # Run all core units tests and enable xdebug (have a PhpStorm listening on port 9003!)
-    ./Build/Scripts/runTests.sh -x
+    ./.Build/bin/t3_run_tests.sh -x
 
     # Run unit tests in phpunit verbose mode with xdebug on PHP 8.0 and filter for test canRetrieveValueWithGP
-    ./Build/Scripts/runTests.sh -x -p 8.0 -e "-v --filter canRetrieveValueWithGP"
+    ./.Build/bin/t3_run_tests.sh -x -p 8.0 -e "-v --filter canRetrieveValueWithGP"
 
     # Run functional tests in phpunit with a filtered test method name in a specified file
     # example will currently execute two tests, both of which start with the search term
-    ./Build/Scripts/runTests.sh -s functional -e "--filter deleteContent" typo3/sysext/core/Tests/Functional/DataHandling/Regular/Modify/ActionTest.php
+    ./.Build/bin/t3_run_tests.sh -s functional -e "--filter deleteContent" typo3/sysext/core/Tests/Functional/DataHandling/Regular/Modify/ActionTest.php
 
     # Run unit tests with PHP 8.0 and have xdebug enabled
-    ./Build/Scripts/runTests.sh -x -p 8.0
+    ./.Build/bin/t3_run_tests.sh -x -p 8.0
 
     # Run functional tests on postgres with xdebug, php 8.0 and execute a restricted set of tests
-    ./Build/Scripts/runTests.sh -x -p 8.0 -s functional -d postgres typo3/sysext/core/Tests/Functional/Authentication
+    ./.Build/bin/t3_run_tests.sh -x -p 8.0 -s functional -d postgres typo3/sysext/core/Tests/Functional/Authentication
 
     # Run functional tests on mariadb 10.5
-    ./Build/Scripts/runTests.sh -d mariadb -i 10.5
+    ./.Build/bin/t3_run_tests.sh -d mariadb -i 10.5
 
     # Run functional tests on postgres 11
-    ./Build/Scripts/runTests.sh -s functional -d postgres -k 11
+    ./.Build/bin/t3_run_tests.sh -s functional -d postgres -k 11
 
     # Run restricted set of application acceptance tests
-    ./Build/Scripts/runTests.sh -s acceptance typo3/sysext/core/Tests/Acceptance/Application/Login/BackendLoginCest.php:loginButtonMouseOver
+    ./.Build/bin/t3_run_tests.sh -s acceptance typo3/sysext/core/Tests/Acceptance/Application/Login/BackendLoginCest.php:loginButtonMouseOver
 
     # Run installer tests of a new instance on sqlite
-    ./Build/Scripts/runTests.sh -s acceptanceInstall -d sqlite
+    ./.Build/bin/t3_run_tests.sh -s acceptanceInstall -d sqlite
 EOF
 
 # Test if docker-compose exists, else exit out with error
@@ -471,7 +471,7 @@ if [ ${#INVALID_OPTIONS[@]} -ne 0 ]; then
         echo "-"${I} >&2
     done
     echo >&2
-    echo "call \".Build/Scripts/runTests.sh -h\" to display help and valid options"
+    echo "call \"./.Build/bin/t3_run_tests.sh -h\" to display help and valid options"
     exit 1
 fi
 
@@ -532,7 +532,7 @@ case ${TEST_SUITE} in
             *)
                 echo "Acceptance tests don't run with DBMS ${DBMS}" >&2
                 echo >&2
-                echo "call \".Build/Scripts/runTests.sh -h\" to display help and valid options" >&2
+                echo "call \"./.Build/bin/t3_run_tests.sh -h\" to display help and valid options" >&2
                 exit 1
         esac
         docker-compose down
@@ -566,7 +566,7 @@ case ${TEST_SUITE} in
             *)
                 echo "Acceptance install tests don't run with DBMS ${DBMS}" >&2
                 echo >&2
-                echo "call \".Build/Scripts/runTests.sh -h\" to display help and valid options" >&2
+                echo "call \"./.Build/bin/t3_run_tests.sh -h\" to display help and valid options" >&2
                 exit 1
         esac
         docker-compose down
@@ -762,7 +762,7 @@ case ${TEST_SUITE} in
             *)
                 echo "Functional tests don't run with DBMS ${DBMS}" >&2
                 echo >&2
-                echo "call \".Build/Scripts/runTests.sh -h\" to display help and valid options" >&2
+                echo "call \"./.Build/bin/t3_run_tests.sh -h\" to display help and valid options" >&2
                 exit 1
         esac
         docker-compose down
@@ -807,7 +807,7 @@ case ${TEST_SUITE} in
             *)
                 echo "Deprecated functional tests don't run with DBMS ${DBMS}" >&2
                 echo >&2
-                echo "call \".Build/Scripts/runTests.sh -h\" to display help and valid options" >&2
+                echo "call \"./.Build/bin/t3_run_tests.sh -h\" to display help and valid options" >&2
                 exit 1
         esac
         docker-compose down
