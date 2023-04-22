@@ -170,6 +170,7 @@ Options:
             - composerInstall: "composer install"
             - composerInstallMax: "composer update", with no platform.php config.
             - composerInstallMin: "composer update --prefer-lowest", with platform.php set to PHP version x.x.0.
+            - composerNormalize: "composer normalize"
             - composerTestDistribution: "composer update" in Build/composer to verify core dependencies
             - composerValidate: "composer validate"
             - functional: PHP functional tests
@@ -276,7 +277,7 @@ Options:
         replay the unit tests in that order.
 
     -n
-        Only with -s cgl|cglGit
+        Only with -s cgl|cglGit|composerNormalize
         Activate dry-run in CGL check that does not actively change files and only prints broken ones.
 
     -u
@@ -704,6 +705,15 @@ case ${TEST_SUITE} in
     composerInstallMin)
         setUpDockerComposeDotEnv
         docker-compose run composer_install_min
+        SUITE_EXIT_CODE=$?
+        docker-compose down
+        ;;
+    composerNormalize)
+        if [ -n "${CGLCHECK_DRY_RUN}" ]; then
+            CGLCHECK_DRY_RUN="--dry-run"
+        fi
+        setUpDockerComposeDotEnv
+        docker-compose run composer_normalize
         SUITE_EXIT_CODE=$?
         docker-compose down
         ;;
