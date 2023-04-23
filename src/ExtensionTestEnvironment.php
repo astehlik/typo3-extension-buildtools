@@ -14,8 +14,6 @@ class ExtensionTestEnvironment
 {
     public static function prepare(Event $event)
     {
-        TYPO3ExtensionTestEnvironment::prepare($event);
-
         // We are located at .Build/vendor/de-swebhosting/buildtools/src
         $rootDirectory = realpath(__DIR__ . '/../../../../../');
 
