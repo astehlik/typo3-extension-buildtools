@@ -10,7 +10,6 @@
 		"bin/t3_run_tests.sh"
 	],
 	"require": {
-		"squizlabs/php_codesniffer": "^3.1",
 		"codeception/module-asserts": "^3.0.0",
 		"codeception/module-webdriver": "^4.0.0",
 		"codeception/codeception": "^5.0.10",
@@ -18,7 +17,8 @@
 		"typo3/testing-framework": "dev-main"
 	},
 	"suggest": {
-		"de-swebhosting/php-codestyle": "Currently required to run t3_check_codestyle.sh"
+		"de-swebhosting/php-codestyle": "Required to run t3_check_codestyle.sh",
+		"squizlabs/php_codesniffer": "Required to run t3_check_codestyle.sh"
 	},
 	"autoload": {
 		"psr-4": {
