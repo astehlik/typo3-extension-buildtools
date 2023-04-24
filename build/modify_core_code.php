@@ -5,8 +5,14 @@ $dockerComposePath = __DIR__ . '/../testing-docker/docker-compose.yml';
 $dockerCompose = file_get_contents($dockerComposePath);
 
 $dockerCompose = str_replace(
-    'find typo3/ -name \\\\*.php',
-    'find . -name \\\\*.php ! -path "./.Build/\\\\*"',
+    [
+        'find typo3/ -name \\\\*.php',
+        '-c Build/phpunit/FunctionalTests.xml',
+    ],
+    [
+        'find . -name \\\\*.php ! -path "./.Build/\\\\*"',
+        '-c vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests.xml',
+    ],
     $dockerCompose
 );
 
