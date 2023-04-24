@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace De\SWebhosting\Buildtools;
 
 use Composer\Script\Event;
-use TYPO3\TestingFramework\Composer\ExtensionTestEnvironment as TYPO3ExtensionTestEnvironment;
 
 /**
  * This hook creates a vendor symlink in the Web folder because this is where
@@ -12,6 +11,12 @@ use TYPO3\TestingFramework\Composer\ExtensionTestEnvironment as TYPO3ExtensionTe
  */
 class ExtensionTestEnvironment
 {
+    private const REQUIRED_SYSEXT_SYMLINKS = [
+        'backend',
+        'frontend',
+        'install',
+    ];
+
     public static function prepare(Event $event)
     {
         // We are located at .Build/vendor/de-swebhosting/buildtools/src
@@ -20,10 +25,40 @@ class ExtensionTestEnvironment
         $vendorDir = $rootDirectory . DIRECTORY_SEPARATOR . '.Build' . DIRECTORY_SEPARATOR . 'vendor';
 
         $webDir = $rootDirectory . DIRECTORY_SEPARATOR . '.Build' . DIRECTORY_SEPARATOR . 'Web';
-        $webVendorSymlink = $webDir . DIRECTORY_SEPARATOR . 'vendor';
 
-        if (!is_link($webVendorSymlink)) {
-            symlink($vendorDir, $webVendorSymlink);
+        $extDir = $webDir . DIRECTORY_SEPARATOR . 'typo3conf' . DIRECTORY_SEPARATOR . 'ext';
+
+        $sysextDir = $webDir . DIRECTORY_SEPARATOR . 'typo3' . DIRECTORY_SEPARATOR . 'sysext';
+
+        if (!is_dir($extDir)) {
+            mkdir($extDir, 0755, true);
+        }
+
+        if (!is_dir($sysextDir)) {
+            mkdir($sysextDir, 0755, true);
+        }
+
+        $packageArtifactPath = $vendorDir . DIRECTORY_SEPARATOR . 'typo3' . DIRECTORY_SEPARATOR . 'PackageArtifact.php';
+
+        if (!file_exists($packageArtifactPath)) {
+            $event->getIO()->writeError('PackageArtifact.php not found. Please run "composer install" first.');
+            return;
+        }
+
+        $packages = require $packageArtifactPath;
+
+        foreach ($packages['composerNameToPackageKeyMap'] as $composerName => $extensionName) {
+            if (str_starts_with($composerName, 'typo3/cms-')) {
+                $sysextSymlink = $sysextDir . DIRECTORY_SEPARATOR . $extensionName;
+
+                if (!is_link($sysextSymlink)) {
+                    symlink(
+                        $vendorDir . DIRECTORY_SEPARATOR . 'typo3' . DIRECTORY_SEPARATOR . 'cms-' . $extensionName,
+                        $sysextSymlink
+                    );
+                }
+                continue;
+            }
         }
     }
 }
