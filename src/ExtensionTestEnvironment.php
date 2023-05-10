@@ -13,6 +13,15 @@ class ExtensionTestEnvironment
 {
     public static function prepare(Event $event): void
     {
+        $extensionKey = $event->getComposer()->getPackage()->getExtra()['typo3/cms']['extension-key'] ?? '';
+
+        if ($extensionKey === '') {
+            throw new \RuntimeException(
+                'Could not read Extension key from composer.json.'
+                . ' Please add "typo3/cms.extension-key" in the extras section of your composer.json.'
+            );
+        }
+
         // We are located at .Build/vendor/de-swebhosting/buildtools/src
         $rootDirectory = realpath(__DIR__ . '/../../../../../');
 
@@ -26,6 +35,11 @@ class ExtensionTestEnvironment
 
         if (!is_dir($extDir)) {
             mkdir($extDir, 0755, true);
+        }
+
+        $extensionSymlink = $extDir . DIRECTORY_SEPARATOR . $extensionKey;
+        if (!file_exists($extensionSymlink)) {
+            symlink($rootDirectory, $extensionSymlink);
         }
 
         if (!is_dir($sysextDir)) {
