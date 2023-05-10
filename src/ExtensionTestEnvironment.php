@@ -11,12 +11,6 @@ use Composer\Script\Event;
  */
 class ExtensionTestEnvironment
 {
-    private const REQUIRED_SYSEXT_SYMLINKS = [
-        'backend',
-        'frontend',
-        'install',
-    ];
-
     public static function prepare(Event $event)
     {
         // We are located at .Build/vendor/de-swebhosting/buildtools/src
