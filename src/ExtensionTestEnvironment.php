@@ -11,7 +11,7 @@ use Composer\Script\Event;
  */
 class ExtensionTestEnvironment
 {
-    public static function prepare(Event $event)
+    public static function prepare(Event $event): void
     {
         // We are located at .Build/vendor/de-swebhosting/buildtools/src
         $rootDirectory = realpath(__DIR__ . '/../../../../../');
