@@ -14,7 +14,7 @@
 		"codeception/module-webdriver": "^4.0.0",
 		"codeception/codeception": "^5.0.10",
 		"phpunit/phpunit": "^10.1.1",
-		"typo3/testing-framework": "dev-main"
+		"typo3/testing-framework": "^8.0.0"
 	},
 	"suggest": {
 		"de-swebhosting/php-codestyle": "Required to run t3_check_codestyle.sh",
