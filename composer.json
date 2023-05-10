@@ -24,5 +24,14 @@
 		"psr-4": {
 			"De\\SWebhosting\\Buildtools\\": "src/"
 		}
+	},
+	"require-dev": {
+		"composer/composer": "^2.5"
+	},
+	"config": {
+		"allow-plugins": {
+			"typo3/class-alias-loader": true,
+			"typo3/cms-composer-installers": true
+		}
 	}
 }
