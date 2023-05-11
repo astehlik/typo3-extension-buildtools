@@ -39,7 +39,7 @@ class ExtensionTestEnvironment
 
         $extensionSymlink = $extDir . DIRECTORY_SEPARATOR . $extensionKey;
         if (!file_exists($extensionSymlink)) {
-            symlink($rootDirectory, $extensionSymlink);
+            symlink('../../../..', $extensionSymlink);
         }
 
         if (!is_dir($sysextDir)) {
