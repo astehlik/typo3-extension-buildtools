@@ -100,9 +100,9 @@ services:
         php -v | grep '^PHP'
         if [ ${CHUNKS} -gt 0 ]; then
           echo \"Running chunk ${THISCHUNK}\"
-          COMMAND=\"bin/codecept run Application -d -g AcceptanceTests-Job-${THISCHUNK} -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} ${TEST_FILE} --xml reports.xml --html reports.html\"
+          COMMAND=\"bin/codecept run ${ACCEPTANCE_SUITE} -d -g AcceptanceTests-Job-${THISCHUNK} -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} ${TEST_FILE} --xml reports.xml --html reports.html\"
         else
-          COMMAND=\"bin/codecept run Application -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} ${TEST_FILE} --xml reports.xml --html reports.html\"
+          COMMAND=\"bin/codecept run ${ACCEPTANCE_SUITE} -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} ${TEST_FILE} --xml reports.xml --html reports.html\"
         fi
         mkdir -p Web/typo3temp/var/tests/
         if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
@@ -154,9 +154,9 @@ services:
         php -v | grep '^PHP'
         if [ ${CHUNKS} -gt 0 ]; then
           echo \"Running chunk ${THISCHUNK}\"
-          COMMAND=\"bin/codecept run Application -d -g AcceptanceTests-Job-${THISCHUNK} -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} ${TEST_FILE} --xml reports.xml --html reports.html\"
+          COMMAND=\"bin/codecept run ${ACCEPTANCE_SUITE} -d -g AcceptanceTests-Job-${THISCHUNK} -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} ${TEST_FILE} --xml reports.xml --html reports.html\"
         else
-          COMMAND=\"bin/codecept run Application -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} ${TEST_FILE} --xml reports.xml --html reports.html\"
+          COMMAND=\"bin/codecept run ${ACCEPTANCE_SUITE} -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} ${TEST_FILE} --xml reports.xml --html reports.html\"
         fi
         mkdir -p Web/typo3temp/var/tests/
         if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
@@ -211,9 +211,9 @@ services:
         php -v | grep '^PHP'
         if [ ${CHUNKS} -gt 0 ]; then
           echo \"Running chunk ${THISCHUNK}\"
-          COMMAND=\"bin/codecept run Application -d -g AcceptanceTests-Job-${THISCHUNK} -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} ${TEST_FILE} --xml reports.xml --html reports.html\"
+          COMMAND=\"bin/codecept run ${ACCEPTANCE_SUITE} -d -g AcceptanceTests-Job-${THISCHUNK} -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} ${TEST_FILE} --xml reports.xml --html reports.html\"
         else
-          COMMAND=\"bin/codecept run Application -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} ${TEST_FILE} --xml reports.xml --html reports.html\"
+          COMMAND=\"bin/codecept run ${ACCEPTANCE_SUITE} -d -c Web/typo3conf/ext/${COMPOSE_PROJECT_NAME}/Tests/codeception.yml ${EXTRA_TEST_OPTIONS} ${TEST_FILE} --xml reports.xml --html reports.html\"
         fi
         mkdir -p Web/typo3temp/var/tests/
         if [ ${PHP_XDEBUG_ON} -eq 0 ]; then

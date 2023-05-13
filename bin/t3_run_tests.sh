@@ -45,6 +45,7 @@ setUpDockerComposeDotEnv() {
         echo "DOCKER_SELENIUM_IMAGE=${DOCKER_SELENIUM_IMAGE}"
         echo "IS_CORE_CI=${IS_CORE_CI}"
         echo "PHPSTAN_CONFIG_FILE=${PHPSTAN_CONFIG_FILE}"
+        echo "ACCEPTANCE_SUITE=${ACCEPTANCE_SUITE}"
     } > .env
 }
 
@@ -241,6 +242,10 @@ Options:
         useful if a local PhpStorm instance is listening on default xdebug port 9003. A different port
         can be selected with -y
 
+    -t
+        Only with -s acceptance
+        The test suite that should be run, default is "Application"
+
     -y <port>
         Send xdebug information to a different port than default 9003 if an IDE like PhpStorm
         is not listening on default port.
@@ -337,6 +342,7 @@ THISCHUNK=0
 DOCKER_SELENIUM_IMAGE="selenium/standalone-chrome:4.0.0-20211102"
 IS_CORE_CI=0
 PHPSTAN_CONFIG_FILE="phpstan.local.neon"
+ACCEPTANCE_SUITE="Application"
 
 # ENV var "CI" is set by gitlab-ci. We use it here to distinct 'local' and 'CI' environment.
 if [ "$CI" == "true" ]; then
@@ -359,7 +365,7 @@ OPTIND=1
 # Array for invalid options
 INVALID_OPTIONS=();
 # Simple option parsing based on getopts (! not getopt)
-while getopts ":a:s:c:d:i:j:k:p:e:xyz:o:nhuv" OPT; do
+while getopts ":a:s:c:d:i:j:k:p:e:t:xyz:o:nhuv" OPT; do
     case ${OPT} in
         s)
             TEST_SUITE=${OPTARG}
@@ -405,6 +411,9 @@ while getopts ":a:s:c:d:i:j:k:p:e:xyz:o:nhuv" OPT; do
             ;;
         e)
             EXTRA_TEST_OPTIONS=${OPTARG}
+            ;;
+        t)
+            ACCEPTANCE_SUITE=${OPTARG}
             ;;
         x)
             PHP_XDEBUG_ON=1
