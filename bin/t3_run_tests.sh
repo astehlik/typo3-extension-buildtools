@@ -136,7 +136,6 @@ Options:
     -s <...>
         Specifies which test suite to run
             - acceptance: main application acceptance tests
-            - acceptanceInstall: installation acceptance tests, only with -d mariadb|postgres|sqlite
             - buildCss: execute scss to css builder
             - buildJavascript: execute typescript to javascript builder
             - cgl: test and fix all core php files
@@ -189,7 +188,7 @@ Options:
                 - pdo_mysql
 
     -d <sqlite|mariadb|mysql|postgres>
-        Only with -s functional|functionalDeprecated|acceptance|acceptanceInstall
+        Only with -s functional|functionalDeprecated|acceptance
         Specifies on which DBMS tests are performed
             - sqlite: (default): use sqlite
             - mariadb use mariadb
@@ -237,7 +236,7 @@ Options:
         named "canRetrieveValueWithGP"
 
     -x
-        Only with -s functional|functionalDeprecated|unit|unitDeprecated|unitRandom|acceptance|acceptanceInstall
+        Only with -s functional|functionalDeprecated|unit|unitDeprecated|unitRandom|acceptance
         Send information to host instance for test or system under test break points. This is especially
         useful if a local PhpStorm instance is listening on default xdebug port 9003. A different port
         can be selected with -y
@@ -300,9 +299,6 @@ Examples:
 
     # Run restricted set of application acceptance tests
     ./.Build/bin/t3_run_tests.sh -s acceptance typo3/sysext/core/Tests/Acceptance/Application/Login/BackendLoginCest.php:loginButtonMouseOver
-
-    # Run installer tests of a new instance on sqlite
-    ./.Build/bin/t3_run_tests.sh -s acceptanceInstall -d sqlite
 EOF
 
 # Test if docker-compose exists, else exit out with error
@@ -510,40 +506,6 @@ case ${TEST_SUITE} in
                 ;;
             *)
                 echo "Acceptance tests don't run with DBMS ${DBMS}" >&2
-                echo >&2
-                echo "call \"./.Build/bin/t3_run_tests.sh -h\" to display help and valid options" >&2
-                exit 1
-        esac
-        docker-compose down
-        ;;
-    acceptanceInstall)
-        handleDbmsAndDriverOptions
-        setUpDockerComposeDotEnv
-        case ${DBMS} in
-            mysql)
-                echo "Using driver: ${DATABASE_DRIVER}"
-                docker-compose run prepare_acceptance_install_mysql
-                docker-compose run acceptance_install_mysql
-                SUITE_EXIT_CODE=$?
-                ;;
-            mariadb)
-                echo "Using driver: ${DATABASE_DRIVER}"
-                docker-compose run prepare_acceptance_install_mariadb
-                docker-compose run acceptance_install_mariadb
-                SUITE_EXIT_CODE=$?
-                ;;
-            postgres)
-                docker-compose run prepare_acceptance_install_postgres
-                docker-compose run acceptance_install_postgres
-                SUITE_EXIT_CODE=$?
-                ;;
-            sqlite)
-                docker-compose run prepare_acceptance_install_sqlite
-                docker-compose run acceptance_install_sqlite
-                SUITE_EXIT_CODE=$?
-                ;;
-            *)
-                echo "Acceptance install tests don't run with DBMS ${DBMS}" >&2
                 echo >&2
                 echo "call \"./.Build/bin/t3_run_tests.sh -h\" to display help and valid options" >&2
                 exit 1
@@ -907,7 +869,7 @@ else
     echo "Environment: local" >&2
 fi
 echo "PHP: ${PHP_VERSION}" >&2
-if [[ ${TEST_SUITE} =~ ^(functional|acceptance|acceptanceInstall)$ ]]; then
+if [[ ${TEST_SUITE} =~ ^(functional|acceptance)$ ]]; then
     echo "${DBMS_OUTPUT}" >&2
 fi
 
