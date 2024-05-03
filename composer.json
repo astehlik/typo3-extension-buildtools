@@ -11,10 +11,10 @@
 	],
 	"require": {
 		"codeception/module-asserts": "^3.0.0",
-		"codeception/module-webdriver": "^4.0.0",
-		"codeception/codeception": "^5.0.10",
-		"phpunit/phpunit": "^10.1.1",
-		"typo3/testing-framework": "^8.0.0"
+		"codeception/module-webdriver": "^4.0.1",
+		"codeception/codeception": "^5.1.1",
+		"phpunit/phpunit": "^11.0.3",
+		"typo3/testing-framework": "dev-main"
 	},
 	"suggest": {
 		"de-swebhosting/php-codestyle": "Required to run t3_check_codestyle.sh",
