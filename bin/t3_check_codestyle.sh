@@ -26,21 +26,21 @@ if ls ext_*.php 1> /dev/null 2>&1; then
     testPaths="${testPaths} ext_*.php"
 fi
 
-phpcsCmd=".Build/bin/phpcs"
+phpcsCmd="bin/phpcs"
 customRuleset="$1"
 if [[ "$1" == "fix" ]]; then
     customRuleset="$2"
-    phpcsCmd=".Build/bin/phpcbf"
+    phpcsCmd="bin/phpcbf"
 fi
 
 if [[ ! -d "${PWD}/Tests/CodeSniffer" ]]; then
-    php .Build/bin/phpcs --config-set installed_paths ${PWD}/.Build/vendor/de-swebhosting/php-codestyle/PhpCodeSniffer/
+    php bin/phpcs --config-set installed_paths ${PWD}/.Build/vendor/de-swebhosting/php-codestyle/PhpCodeSniffer/
     php ${phpcsCmd} --standard=PSRDefault ${testPaths}
 else
     if [[ -z "${customRuleset}" ]]; then
         echo "Name of custom ruleset must be provided"
         exit 1
     fi
-    php .Build/bin/phpcs --config-set installed_paths ${PWD}/.Build/vendor/de-swebhosting/php-codestyle/PhpCodeSniffer/,${PWD}/Tests/CodeSniffer
+    php bin/phpcs --config-set installed_paths ${PWD}/.Build/vendor/de-swebhosting/php-codestyle/PhpCodeSniffer/,${PWD}/Tests/CodeSniffer
     php ${phpcsCmd} --standard=${customRuleset} ${testPaths}
 fi
