@@ -1,0 +1,43 @@
+diff --git t3_run_tests.sh t3_run_tests.sh
+index 1713f2a..ec606a9 100755
+--- t3_run_tests.sh
++++ t3_run_tests.sh
+@@ -405,6 +405,7 @@ DBMS="sqlite"
+ DBMS_VERSION=""
+ PHP_VERSION="8.2"
+ PHP_XDEBUG_ON=0
++PHP_XDEBUG_MODE=""
+ PHP_XDEBUG_PORT=9003
+ ACCEPTANCE_HEADLESS=1
+ ACCEPTANCE_TOPIC="sets"
+@@ -432,7 +433,7 @@ OPTIND=1
+ # Array for invalid options
+ INVALID_OPTIONS=()
+ # Simple option parsing based on getopts (! not getopt)
+-while getopts ":a:b:s:c:d:i:t:p:e:xy:o:nhug" OPT; do
++while getopts ":a:b:s:c:d:i:t:p:e:xX:y:o:nhug" OPT; do
+     case ${OPT} in
+         s)
+             TEST_SUITE=${OPTARG}
+@@ -479,6 +480,10 @@ while getopts ":a:b:s:c:d:i:t:p:e:xy:o:nhug" OPT; do
+         x)
+             PHP_XDEBUG_ON=1
+             ;;
++        X)
++            PHP_XDEBUG_ON=0
++            PHP_XDEBUG_MODE=${OPTARG}
++            ;;
+         y)
+             PHP_XDEBUG_PORT=${OPTARG}
+             ;;
+@@ -590,6 +595,10 @@ else
+     PHP_FPM_OPTIONS="-d xdebug.mode=debug -d xdebug.start_with_request=yes -d xdebug.client_host=${CONTAINER_HOST} -d xdebug.client_port=${PHP_XDEBUG_PORT} -d memory_limit=256M"
+ fi
+ 
++if [ ${PHP_XDEBUG_MODE} = "coverage" ]; then
++    XDEBUG_MODE="-e XDEBUG_MODE=coverage"
++fi
++
+ # Suite execution
+ case ${TEST_SUITE} in
+     acceptance)

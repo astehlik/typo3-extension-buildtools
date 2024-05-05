@@ -1,5 +1,7 @@
 #!bin/bash
 
+set -e
+
 thisScriptDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 t3RunTestScript="${thisScriptDir}/../bin/t3_run_tests.sh"
 
@@ -19,3 +21,11 @@ sed -i 's/Build\/phpunit\/UnitTests.xml/.Build\/vendor\/de-swebhosting\/typo3-ex
 
 # Replace Build/phpunit/FunctionalTests.xml with .Build/vendor/de-swebhosting/typo3-extension-buildtools/phpunit/FunctionalTests.xml
 sed -i 's/Build\/phpunit\/FunctionalTests.xml/.Build\/vendor\/de-swebhosting\/typo3-extension-buildtools\/phpunit\/FunctionalTests.xml/g' "${t3RunTestScript}"
+
+set +e
+patch -p0 --forward --directory="${thisScriptDir}/../bin/" < "${thisScriptDir}/t3_run_tests_xdebug_mode.diff"
+retCode=$?
+if [[ $retCode -gt 0 ]]; then
+    [[ $retCode -gt 1 ]] && exit $retCode || echo "Patch already applied"
+    rm -f ${thisScriptDir}/../bin/t3_run_tests.sh.rej
+fi
