@@ -55,6 +55,14 @@ class ExtensionTestEnvironment
 
         $packages = require $packageArtifactPath;
 
+        $event->getIO()->write(
+            sprintf(
+                'Creating %d symlinks for extension testing environment in %s',
+                count($packages['composerNameToPackageKeyMap']),
+                $sysextDir,
+            )
+        );
+
         foreach ($packages['composerNameToPackageKeyMap'] as $composerName => $extensionName) {
             if (str_starts_with($composerName, 'typo3/cms-')) {
                 $sysextSymlink = $sysextDir . DIRECTORY_SEPARATOR . $extensionName;
