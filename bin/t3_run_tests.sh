@@ -595,7 +595,7 @@ else
     PHP_FPM_OPTIONS="-d xdebug.mode=debug -d xdebug.start_with_request=yes -d xdebug.client_host=${CONTAINER_HOST} -d xdebug.client_port=${PHP_XDEBUG_PORT} -d memory_limit=256M"
 fi
 
-if [ ${PHP_XDEBUG_MODE} = "coverage" ]; then
+if [ "${PHP_XDEBUG_MODE:-}" = "coverage" ]; then
     XDEBUG_MODE="-e XDEBUG_MODE=coverage"
 fi
 
