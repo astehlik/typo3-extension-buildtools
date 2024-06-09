@@ -1,5 +1,5 @@
 rootPageId: 1
-base: "http://web:8000/typo3temp/var/tests/acceptance/"
+base: "http://web"
 languages:
   - title: English
     enabled: true

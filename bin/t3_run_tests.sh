@@ -398,6 +398,7 @@ THIS_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
 cd "$THIS_SCRIPT_DIR" || exit 1
 cd ../../../../../ || exit 1
 CORE_ROOT="${PWD}"
+ACCEPTANCE_ROOT="${CORE_ROOT}/.Build/Web"
 
 # Default variables
 TEST_SUITE="unit"
@@ -616,9 +617,9 @@ case ${TEST_SUITE} in
         if [ "${ACCEPTANCE_HEADLESS}" -eq 0 ]; then
             SELENIUM_GRID="-p 7900:7900 -e SE_VNC_NO_PASSWORD=1 -e VNC_NO_PASSWORD=1"
         fi
-        rm -rf "${CORE_ROOT}/typo3temp/var/tests/acceptance" "${CORE_ROOT}/typo3temp/var/tests/AcceptanceReports"
-        mkdir -p "${CORE_ROOT}/typo3temp/var/tests/acceptance"
-        APACHE_OPTIONS="-e APACHE_RUN_USER=#${HOST_UID} -e APACHE_RUN_SERVERNAME=web -e APACHE_RUN_GROUP=#${HOST_PID} -e APACHE_RUN_DOCROOT=${CORE_ROOT}/typo3temp/var/tests/acceptance -e PHPFPM_HOST=phpfpm -e PHPFPM_PORT=9000"
+        rm -rf "${ACCEPTANCE_ROOT}/typo3temp/var/tests/acceptance" "${CORE_ROOT}/typo3temp/var/tests/AcceptanceReports"
+        mkdir -p "${ACCEPTANCE_ROOT}/typo3temp/var/tests/acceptance"
+        APACHE_OPTIONS="-e APACHE_RUN_USER=#${HOST_UID} -e APACHE_RUN_SERVERNAME=web -e APACHE_RUN_GROUP=#${HOST_PID} -e APACHE_RUN_DOCROOT=${ACCEPTANCE_ROOT}/typo3temp/var/tests/acceptance -e PHPFPM_HOST=phpfpm -e PHPFPM_PORT=9000"
         ${CONTAINER_BIN} run --rm ${CI_PARAMS} -d ${SELENIUM_GRID} --name ac-chrome-${SUFFIX} --network ${NETWORK} --network-alias chrome --tmpfs /dev/shm:rw,nosuid,nodev,noexec ${IMAGE_SELENIUM} >/dev/null
         if [ ${CONTAINER_BIN} = "docker" ]; then
             ${CONTAINER_BIN} run --rm -d --name ac-phpfpm-${SUFFIX} --network ${NETWORK} --network-alias phpfpm --add-host "${CONTAINER_HOST}:host-gateway" ${USERSET} -e PHPFPM_USER=${HOST_UID} -e PHPFPM_GROUP=${HOST_PID} -v ${CORE_ROOT}:${CORE_ROOT} ${IMAGE_PHP} php-fpm ${PHP_FPM_OPTIONS} >/dev/null
@@ -660,8 +661,8 @@ case ${TEST_SUITE} in
                 SUITE_EXIT_CODE=$?
                 ;;
             sqlite)
-                rm -rf "${CORE_ROOT}/typo3temp/var/tests/acceptance-sqlite-dbs/"
-                mkdir -p "${CORE_ROOT}/typo3temp/var/tests/acceptance-sqlite-dbs/"
+                rm -rf "${ACCEPTANCE_ROOT}/typo3temp/var/tests/acceptance-sqlite-dbs/"
+                mkdir -p "${ACCEPTANCE_ROOT}/typo3temp/var/tests/acceptance-sqlite-dbs/"
                 CONTAINERPARAMS="-e typo3DatabaseDriver=pdo_sqlite"
                 ${CONTAINER_BIN} run ${CONTAINER_COMMON_PARAMS} --name ac-sqlite ${XDEBUG_MODE} -e XDEBUG_CONFIG="${XDEBUG_CONFIG}" ${CONTAINERPARAMS} ${IMAGE_PHP} "${COMMAND[@]}"
                 SUITE_EXIT_CODE=$?
@@ -669,7 +670,7 @@ case ${TEST_SUITE} in
         esac
         ;;
     acceptanceComposer)
-        rm -rf "${CORE_ROOT}/typo3temp/var/tests/acceptance-composer" "${CORE_ROOT}/typo3temp/var/tests/AcceptanceReports"
+        rm -rf "${ACCEPTANCE_ROOT}/typo3temp/var/tests/acceptance-composer" "${CORE_ROOT}/typo3temp/var/tests/AcceptanceReports"
 
         PREPAREPARAMS=""
         TESTPARAMS=""
@@ -715,7 +716,7 @@ case ${TEST_SUITE} in
             if [ "${ACCEPTANCE_HEADLESS}" -eq 0 ]; then
                 SELENIUM_GRID="-p 7900:7900 -e SE_VNC_NO_PASSWORD=1 -e VNC_NO_PASSWORD=1"
             fi
-            APACHE_OPTIONS="-e APACHE_RUN_USER=#${HOST_UID} -e APACHE_RUN_SERVERNAME=web -e APACHE_RUN_GROUP=#${HOST_PID} -e APACHE_RUN_DOCROOT=${CORE_ROOT}/typo3temp/var/tests/acceptance-composer/public -e PHPFPM_HOST=phpfpm -e PHPFPM_PORT=9000"
+            APACHE_OPTIONS="-e APACHE_RUN_USER=#${HOST_UID} -e APACHE_RUN_SERVERNAME=web -e APACHE_RUN_GROUP=#${HOST_PID} -e APACHE_RUN_DOCROOT=${ACCEPTANCE_ROOT}/typo3temp/var/tests/acceptance-composer/public -e PHPFPM_HOST=phpfpm -e PHPFPM_PORT=9000"
             ${CONTAINER_BIN} run --rm ${CI_PARAMS} -d ${SELENIUM_GRID} --name ac-chrome-${SUFFIX} --network ${NETWORK} --network-alias chrome --tmpfs /dev/shm:rw,nosuid,nodev,noexec ${IMAGE_SELENIUM} >/dev/null
             if [ ${CONTAINER_BIN} = "docker" ]; then
                 ${CONTAINER_BIN} run --rm -d --name ac-phpfpm-${SUFFIX} --network ${NETWORK} --network-alias phpfpm --add-host "${CONTAINER_HOST}:host-gateway" ${USERSET} -e PHPFPM_USER=${HOST_UID} -e PHPFPM_GROUP=${HOST_PID} -v ${CORE_ROOT}:${CORE_ROOT} ${IMAGE_PHP} php-fpm ${PHP_FPM_OPTIONS} >/dev/null
@@ -744,9 +745,9 @@ case ${TEST_SUITE} in
         if [ "${ACCEPTANCE_HEADLESS}" -eq 0 ]; then
             SELENIUM_GRID="-p 7900:7900 -e SE_VNC_NO_PASSWORD=1 -e VNC_NO_PASSWORD=1"
         fi
-        rm -rf "${CORE_ROOT}/typo3temp/var/tests/acceptance" "${CORE_ROOT}/typo3temp/var/tests/AcceptanceReports"
-        mkdir -p "${CORE_ROOT}/typo3temp/var/tests/acceptance"
-        APACHE_OPTIONS="-e APACHE_RUN_USER=#${HOST_UID} -e APACHE_RUN_SERVERNAME=web -e APACHE_RUN_GROUP=#${HOST_PID} -e APACHE_RUN_DOCROOT=${CORE_ROOT}/typo3temp/var/tests/acceptance -e PHPFPM_HOST=phpfpm -e PHPFPM_PORT=9000"
+        rm -rf "${ACCEPTANCE_ROOT}/typo3temp/var/tests/acceptance" "${CORE_ROOT}/typo3temp/var/tests/AcceptanceReports"
+        mkdir -p "${ACCEPTANCE_ROOT}/typo3temp/var/tests/acceptance"
+        APACHE_OPTIONS="-e APACHE_RUN_USER=#${HOST_UID} -e APACHE_RUN_SERVERNAME=web -e APACHE_RUN_GROUP=#${HOST_PID} -e APACHE_RUN_DOCROOT=${ACCEPTANCE_ROOT}/typo3temp/var/tests/acceptance -e PHPFPM_HOST=phpfpm -e PHPFPM_PORT=9000"
         ${CONTAINER_BIN} run --rm ${CI_PARAMS} -d ${SELENIUM_GRID} --name ac-install-chrome-${SUFFIX} --network ${NETWORK} --network-alias chrome --tmpfs /dev/shm:rw,nosuid,nodev,noexec ${IMAGE_SELENIUM} >/dev/null
         if [ ${CONTAINER_BIN} = "docker" ]; then
             ${CONTAINER_BIN} run --rm -d --name ac-install-phpfpm-${SUFFIX} --network ${NETWORK} --network-alias phpfpm --add-host "${CONTAINER_HOST}:host-gateway" ${USERSET} -e PHPFPM_USER=${HOST_UID} -e PHPFPM_GROUP=${HOST_PID} -v ${CORE_ROOT}:${CORE_ROOT} ${IMAGE_PHP} php-fpm ${PHP_FPM_OPTIONS} >/dev/null
@@ -803,8 +804,8 @@ case ${TEST_SUITE} in
                 SUITE_EXIT_CODE=$?
                 ;;
             sqlite)
-                rm -rf "${CORE_ROOT}/typo3temp/var/tests/acceptance-sqlite-dbs/"
-                mkdir -p "${CORE_ROOT}/typo3temp/var/tests/acceptance-sqlite-dbs/"
+                rm -rf "${ACCEPTANCE_ROOT}/typo3temp/var/tests/acceptance-sqlite-dbs/"
+                mkdir -p "${ACCEPTANCE_ROOT}/typo3temp/var/tests/acceptance-sqlite-dbs/"
                 CODECEPION_ENV="--env ci,sqlite"
                 if [ "${ACCEPTANCE_HEADLESS}" -eq 1 ]; then
                     CODECEPION_ENV="--env ci,sqlite,headless"
