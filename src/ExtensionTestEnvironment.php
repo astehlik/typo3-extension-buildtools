@@ -25,6 +25,14 @@ class ExtensionTestEnvironment
         // We are located at .Build/vendor/de-swebhosting/buildtools/src
         $rootDirectory = realpath(__DIR__ . '/../../../../../');
 
+        $event->getIO()->write(
+            sprintf(
+                'Detected root directory is %s, current directory is %s',
+                $rootDirectory,
+                realpath(__DIR__)
+            )
+        );
+
         $vendorDir = $rootDirectory . DIRECTORY_SEPARATOR . '.Build' . DIRECTORY_SEPARATOR . 'vendor';
 
         $webDir = $rootDirectory . DIRECTORY_SEPARATOR . '.Build' . DIRECTORY_SEPARATOR . 'Web';
