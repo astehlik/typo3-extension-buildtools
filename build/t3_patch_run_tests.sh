@@ -22,6 +22,9 @@ sed -i 's/Build\/phpunit\/UnitTests.xml/.Build\/vendor\/de-swebhosting\/typo3-ex
 # Replace Build/phpunit/FunctionalTests.xml with .Build/vendor/de-swebhosting/typo3-extension-buildtools/phpunit/FunctionalTests.xml
 sed -i 's/Build\/phpunit\/FunctionalTests.xml/.Build\/vendor\/de-swebhosting\/typo3-extension-buildtools\/phpunit\/FunctionalTests.xml/g' "${t3RunTestScript}"
 
+# Replace typo3/sysext/core/Tests/codeception.yml with Tests/codeception.yml
+sed -i 's/typo3\/sysext\/core\/Tests\/codeception.yml/Tests\/codeception.yml/g' "${t3RunTestScript}"
+
 set +e
 patch -p0 --forward --directory="${thisScriptDir}/../bin/" < "${thisScriptDir}/t3_run_tests_xdebug_mode.diff"
 retCode=$?
