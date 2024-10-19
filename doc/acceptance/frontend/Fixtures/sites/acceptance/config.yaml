@@ -1,5 +1,5 @@
 rootPageId: 1
-base: "http://web"
+base: 'http://web'
 languages:
   - title: English
     enabled: true
@@ -13,5 +13,5 @@ languages:
     direction: ltr
     fallbackType: strict
     flag: gb
-errorHandling: {  }
-routes: {  }
+errorHandling: {}
+routes: {}

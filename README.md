@@ -2,9 +2,9 @@
 
 Test your TYPO3 Extensions with the utilities provided by the TYPO3 core using:
 
-* the `typo3/testing-framework` package
-* `docker` and `docker-compose`
-* the `typo3gmbh/php*` docker images
+- the `typo3/testing-framework` package
+- `docker` and `docker-compose`
+- the `typo3gmbh/php*` docker images
 
 **Hint 1:** currently each version of the tools only supports **one** TYPO3 core version.
 
@@ -46,11 +46,11 @@ export TYPO3_EXTENSION_KEY="<my_extension_key>"
 
 After that you can run the different commands.
 
-* `t3_run_tests.sh` - For running Unit, Functional and Acceptance tests
-* `t3_check_codestyle.sh` - For checking / fixing PHP code style via
+- `t3_run_tests.sh` - For running Unit, Functional and Acceptance tests
+- `t3_check_codestyle.sh` - For checking / fixing PHP code style via
   [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer)
-* `t3_prepare_release.sh` - Prepare docs and `ext_emconf.php` for a release
-* `t3_deploy_to_ter.sh` - Upload Extension to TER
+- `t3_prepare_release.sh` - Prepare docs and `ext_emconf.php` for a release
+- `t3_deploy_to_ter.sh` - Upload Extension to TER
 
 ## Run in travis
 
@@ -62,24 +62,24 @@ Have a look at the [doc/travis-sample.yml](doc/travis-sample.yml) file. You need
 
 The Example Travis CI config will
 
-* validate the `composer.json` file
-* check the code style of your PHP code
-* run Unit Tests for PHP 7.3 and 7.4
-* run functional Tests for PHP 7.3 and 7.4
-* run PHP linting for PHP 7.3 and 7.4
-* run acceptance tests for PHP 7.3 and 7.4
+- validate the `composer.json` file
+- check the code style of your PHP code
+- run Unit Tests for PHP 7.3 and 7.4
+- run functional Tests for PHP 7.3 and 7.4
+- run PHP linting for PHP 7.3 and 7.4
+- run acceptance tests for PHP 7.3 and 7.4
 
 It will also try to deploy your Extension to TER when a tag is pushed. You need to set your TYPO3 login data
 in Travis environment variables for this to work (see [Deploy to TER](#deploy-to-ter)).
 
-* `TYPO3_ORG_USERNAME`
-* `TYPO3_ORG_PASSWORD`
+- `TYPO3_ORG_USERNAME`
+- `TYPO3_ORG_PASSWORD`
 
 ## Write tests
 
 ### Unit test
 
-To write a unit test create the folder `Tests/Unit` in your Extension  and add your first
+To write a unit test create the folder `Tests/Unit` in your Extension and add your first
 test case by extending `TYPO3\TestingFramework\Core\Unit\UnitTestCase`:
 
 ```php
@@ -94,7 +94,7 @@ class MyFirstUnitTest extends UnitTestCase {
 
 ### Functional test
 
-To write a functional test create the folder `Tests/Functional` in your Extension  and add your first functional
+To write a functional test create the folder `Tests/Functional` in your Extension and add your first functional
 test case by extending `TYPO3\TestingFramework\Core\Functional\FunctionalTestCase`:
 
 ```php
@@ -123,10 +123,10 @@ For executing functional tests, run this command:
 
 `<database type>` can be:
 
-* `mariadb`
-* `mssql`
-* `postgres`
-* `sqlite`
+- `mariadb`
+- `mssql`
+- `postgres`
+- `sqlite`
 
 ## Acceptance testing
 
@@ -216,7 +216,7 @@ This is an example to use the default rules and disable line length checking for
 </ruleset>
 ```
 
-After you created the ruleset, you *must* provide its name to the code style checker:
+After you created the ruleset, you _must_ provide its name to the code style checker:
 
 ```bash
 .Build/bin/t3_check_codestyle.sh MyCodingStandard
