@@ -1,9 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
-namespace Vendor\MyExt\Tests\Acceptance\Support\Helper;
+namespace De\SWebhosting\Buildtools\Tests\Acceptance\Helper\Backend;
 
-use Vendor\MyExt\Tests\Acceptance\Support\BackendTester;
+use Sto\Mediaoembed\Tests\Acceptance\Support\BackendTester;
 use TYPO3\TestingFramework\Core\Acceptance\Helper\AbstractModalDialog;
 
 class ModalDialog extends AbstractModalDialog

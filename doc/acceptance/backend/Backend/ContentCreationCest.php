@@ -3,9 +3,9 @@ declare(strict_types=1);
 
 namespace Vendor\MyExt\Tests\Acceptance\Backend;
 
+use De\SWebhosting\Buildtools\Tests\Acceptance\Helper\Backend\ModalDialog;
+use De\SWebhosting\Buildtools\Tests\Acceptance\Helper\Backend\PageTree;
 use Vendor\MyExt\Tests\Acceptance\Support\BackendTester;
-use Vendor\MyExt\Tests\Acceptance\Support\Helper\ModalDialog;
-use Vendor\MyExt\Tests\Acceptance\Support\Helper\PageTree;
 
 class ContentCreationCest
 {
