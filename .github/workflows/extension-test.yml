@@ -1,0 +1,143 @@
+---
+name: Testing and linting
+
+on:
+  workflow_call:
+    inputs:
+      php-version-main:
+        description: 'Main PHP version'
+        required: false
+        default: '8.3'
+        type: string
+      php-versions:
+        description: 'JSON encoded array of PHP versions'
+        required: false
+        default: '["8.2", "8.3"]'
+        type: string
+    secrets:
+      CC_TEST_REPORTER_ID:
+        description: 'Code Climate Test Reporter ID'
+        required: false
+
+jobs:
+  'composer-validate':
+    name: 'Composer validate'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_13
+        with:
+          php_version: '${{ inputs.php-version-main }}'
+      - run: composer validate
+
+  'composer-normalize':
+    name: 'Composer normalize'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_13
+        with:
+          php_version: '${{ inputs.php-version-main }}'
+      - run: composer normalize --dry-run --diff
+
+  'check-codestyle-codesniffer':
+    name: 'PHP_CodeSniffer check'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_13
+        with:
+          php_version: '${{ inputs.php-version-main }}'
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '${{ inputs.php-version-main }}'
+      - run: |
+          bash bin/t3_check_codestyle.sh PerCodeStyleT3Ext
+
+  'check-codestyle-php-cs-fixer':
+    name: 'PHP CS Fixer check'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_13
+        with:
+          php_version: '${{ inputs.php-version-main }}'
+      - run: |
+          bash bin/t3_run_tests.sh -s cgl -n -p ${{ inputs.php-version-main }}
+
+  'php-unit-tests':
+    name: 'PHP Unit tests'
+    strategy:
+      matrix:
+        php_version: ${{ fromJson(inputs.php-versions) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_13
+        with:
+          php_version: ${{ matrix.php_version }}
+      - run: |
+          bash bin/t3_run_tests.sh -s unit -p ${{ matrix.php_version }}
+
+  'php-functional-tests-sqlite':
+    name: 'Functional tests on SQLite'
+    strategy:
+      matrix:
+        php_version: ${{ fromJson(inputs.php-versions) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_13
+        with:
+          php_version: '${{ matrix.php_version }}'
+      - run: |
+          bash bin/t3_run_tests.sh -s functional -d sqlite -p ${{ matrix.php_version }}
+
+  'php-functional-tests-mariadb-main':
+    name: 'Functional tests on MariaDB'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_13
+        with:
+          php_version: ${{ inputs.php-version-main }}
+      - run: |
+          bash bin/t3_run_tests.sh -s functional -d mariadb -p ${{ inputs.php-version-main }}
+
+  'php-lint':
+    name: 'PHP linting'
+    strategy:
+      matrix:
+        php_version: ${{ fromJson(inputs.php-versions) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_13
+        with:
+          php_version: ${{ matrix.php_version }}
+      - run: |
+          bash bin/t3_run_tests.sh -s lintPhp -p ${{ matrix.php_version }}
+
+  'phpstan':
+    name: 'PHPStan'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_13
+        with:
+          php_version: '${{ inputs.php-version-main }}'
+      - run: |
+          bash bin/t3_run_tests.sh -s phpstan -p ${{ inputs.php-version-main }}
+
+  'typo3-scan':
+    name: 'Scan for deprecated and breaking code using typo3scan'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_13
+        with:
+          php_version: '${{ inputs.php-version-main }}'
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '${{ inputs.php-version-main }}'
+      - run: php bin/typo3scan scan .
