@@ -1,3 +1,4 @@
+/node_modules
 /public
 /testing-docker/.env
 /vendor
