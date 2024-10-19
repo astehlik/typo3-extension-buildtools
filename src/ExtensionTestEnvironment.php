@@ -1,9 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace De\SWebhosting\Buildtools;
 
 use Composer\Script\Event;
+use RuntimeException;
 
 /**
  * This hook creates a vendor symlink in the Web folder because this is where
@@ -16,9 +18,9 @@ class ExtensionTestEnvironment
         $extensionKey = $event->getComposer()->getPackage()->getExtra()['typo3/cms']['extension-key'] ?? '';
 
         if ($extensionKey === '') {
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 'Could not read Extension key from composer.json.'
-                . ' Please add "typo3/cms.extension-key" in the extras section of your composer.json.'
+                . ' Please add "typo3/cms.extension-key" in the extras section of your composer.json.',
             );
         }
 
@@ -29,8 +31,8 @@ class ExtensionTestEnvironment
             sprintf(
                 'Detected root directory is %s, current directory is %s',
                 $rootDirectory,
-                realpath(__DIR__)
-            )
+                realpath(__DIR__),
+            ),
         );
 
         $vendorDir = $rootDirectory . DIRECTORY_SEPARATOR . '.Build' . DIRECTORY_SEPARATOR . 'vendor';
@@ -68,7 +70,7 @@ class ExtensionTestEnvironment
                 'Creating %d symlinks for extension testing environment in %s',
                 count($packages['composerNameToPackageKeyMap']),
                 $sysextDir,
-            )
+            ),
         );
 
         foreach ($packages['composerNameToPackageKeyMap'] as $composerName => $extensionName) {
@@ -78,7 +80,7 @@ class ExtensionTestEnvironment
                 if (!is_link($sysextSymlink)) {
                     symlink(
                         $vendorDir . DIRECTORY_SEPARATOR . 'typo3' . DIRECTORY_SEPARATOR . 'cms-' . $extensionName,
-                        $sysextSymlink
+                        $sysextSymlink,
                     );
                 }
                 continue;

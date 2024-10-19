@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vendor\MyExt\Tests\Acceptance\Backend;
@@ -9,15 +10,12 @@ use Vendor\MyExt\Tests\Acceptance\Support\BackendTester;
 
 class ContentCreationCest
 {
-    /**
-     * @param BackendTester $I
-     */
-    public function _before(BackendTester $I)
+    public function _before(BackendTester $I): void
     {
         $I->useExistingSession('admin');
     }
 
-    public function contentCanBeCreated(BackendTester $I, PageTree $pageTree, ModalDialog $modalDialog)
+    public function contentCanBeCreated(BackendTester $I, PageTree $pageTree, ModalDialog $modalDialog): void
     {
         $I->click('Page');
         $pageTree->openPath(['root Page']);

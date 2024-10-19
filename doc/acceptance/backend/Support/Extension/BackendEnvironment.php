@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vendor\MyExt\Tests\Acceptance\Support\Extension;
@@ -8,7 +9,7 @@ use TYPO3\TestingFramework\Core\Acceptance\Extension\BackendEnvironment as TYPO3
 class BackendEnvironment extends TYPO3BackendEnvironment
 {
     /**
-     * Load a list of core extensions and styleguide
+     * Load a list of core extensions and styleguide.
      *
      * @var array
      */

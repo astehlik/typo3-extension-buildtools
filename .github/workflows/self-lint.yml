@@ -33,3 +33,14 @@ jobs:
             ${{ runner.os }}-
       - run: npm install
       - run: npx prettier --check .
+
+  lint-php-cs-fixer:
+    name: 'Lint PHP CS Fixer'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./actions/composer
+        with:
+          php_version: 8.3
+      - run: composer install
+      - run: vendor/bin/php-cs-fixer fix --dry-run --diff --config=build/php-cs-fixer/config.php

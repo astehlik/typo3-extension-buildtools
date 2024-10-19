@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vendor\MyExt\Tests\Acceptance\Support\Extension;
@@ -8,10 +9,10 @@ use TYPO3\TestingFramework\Core\Acceptance\Extension\BackendEnvironment;
 
 class FrontendEnvironment extends BackendEnvironment
 {
-    const SITE_CONFIG_PATH = 'typo3conf/ext/my_ext/Tests/Acceptance/Fixtures/sites';
+    public const SITE_CONFIG_PATH = 'typo3conf/ext/my_ext/Tests/Acceptance/Fixtures/sites';
 
     /**
-     * Load a list of core extensions and styleguide
+     * Load a list of core extensions and styleguide.
      *
      * @var array
      */
