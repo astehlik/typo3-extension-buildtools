@@ -15,15 +15,15 @@ declare(strict_types=1);
  * The TYPO3 project - inspiring people to share!
  */
 
-namespace De\SWebhosting\Buildtools\Tests\Acceptance\Helper\Backend;
+namespace De\SWebhosting\Buildtools\Tests\Acceptance\Support\Helper;
 
-use Facebook\WebDriver\Remote\RemoteWebElement;
+use Codeception\Actor;
 use Facebook\WebDriver\Exception\ElementNotInteractableException;
 use Facebook\WebDriver\Exception\ElementNotVisibleException;
 use Facebook\WebDriver\Exception\NoSuchElementException;
 use Facebook\WebDriver\Remote\RemoteWebDriver;
+use Facebook\WebDriver\Remote\RemoteWebElement;
 use Facebook\WebDriver\WebDriverBy;
-use Sto\Mediaoembed\Tests\Acceptance\Support\BackendTester;
 
 /**
  * Helper class to interact with the page tree.
@@ -38,7 +38,7 @@ abstract class AbstractTree
     public static $treeSelector = '';
 
     /**
-     * @var BackendTester
+     * @var Actor
      */
     protected $tester;
 

@@ -15,21 +15,11 @@ declare(strict_types=1);
  * The TYPO3 project - inspiring people to share!
  */
 
-namespace De\SWebhosting\Buildtools\Tests\Acceptance\Helper\Backend;
+namespace De\SWebhosting\Buildtools\Tests\Acceptance\Support\Helper;
 
-use Sto\Mediaoembed\Tests\Acceptance\Support\BackendTester;
-
-final class PageTree extends AbstractTree
+abstract class AbstractPageTree extends AbstractTree
 {
     public static $treeSelector = '#typo3-pagetree-treeContainer';
-
-    /**
-     * Inject our core AcceptanceTester actor into PageTree.
-     */
-    public function __construct(BackendTester $I)
-    {
-        $this->tester = $I;
-    }
 
     /**
      * Get node identifier of given page.
