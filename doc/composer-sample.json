@@ -1,27 +1,46 @@
 {
+	"name": "my-namespace/my-ext",
+	"description": "Example composer.json for a TYPO3 extension using de-swebhosting/typo3-extension-buildtools",
+	"license": "GPL-3.0-or-later",
+	"type": "typo3-cms-extension",
+	"require": {
+		"php": "^8.2",
+		"typo3/cms-core": "~13.4.0"
+	},
 	"require-dev": {
-		"de-swebhosting/typo3-extension-buildtools": "^10.0"
+		"de-swebhosting/typo3-extension-buildtools": "dev-TYPO3_13"
+	},
+	"autoload": {
+		"psr-4": {
+			"Vendor\\MyExt\\": "Classes/"
+		}
 	},
 	"autoload-dev": {
 		"psr-4": {
-			"My\\Extension\\Tests\\": "Tests/"
+			"Vendor\\MyExt\\Tests\\": "Tests/"
 		}
 	},
 	"config": {
-		"vendor-dir": ".Build/vendor",
-		"bin-dir": ".Build/bin"
+		"allow-plugins": {
+			"ergebnis/composer-normalize": true,
+			"typo3/class-alias-loader": true,
+			"typo3/cms-composer-installers": true
+		},
+		"bin-dir": "bin",
+		"vendor-dir": ".Build/vendor"
+	},
+	"extra": {
+		"typo3/class-alias-loader": {
+			"always-add-alias-loader": true
+		},
+		"typo3/cms": {
+			"extension-key": "my_ext",
+			"web-dir": ".Build/Web"
+		}
 	},
 	"scripts": {
 		"post-autoload-dump": [
-			"TYPO3\\TestingFramework\\Composer\\ExtensionTestEnvironment::prepare",
 			"De\\SWebhosting\\Buildtools\\ExtensionTestEnvironment::prepare"
 		]
-	},
-	"extra": {
-		"typo3/cms": {
-			"app-dir": ".Build",
-			"web-dir": ".Build/Web",
-			"extension-key": "<your_extension_key>"
-		}
 	}
 }
