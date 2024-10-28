@@ -1,4 +1,4 @@
-#!bin/bash
+#!/bin/bash
 
 set -e
 
@@ -30,6 +30,7 @@ sed -i 's/\${CORE_ROOT}\/typo3temp\/var\/tests\/acceptance/\${ACCEPTANCE_ROOT}\/
 
 # Remove line containing '--add-host \"repo.packagist.org:146.59.12.218\"'
 sed -i '/--add-host \\"repo.packagist.org:146.59.12.218/d' "${t3RunTestScript}"
+sed -i -z 's/\nif \[\[ "\${CI}" == "true" \]\]; then\nfi\n//g' "${t3RunTestScript}"
 
 set +e
 patch -p0 --forward --directory="${thisScriptDir}/../bin/" < "${thisScriptDir}/t3_run_tests_xdebug_mode.diff"

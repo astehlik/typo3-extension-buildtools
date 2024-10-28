@@ -571,9 +571,6 @@ else
     CONTAINER_COMMON_PARAMS="${CONTAINER_INTERACTIVE} ${CI_PARAMS} --rm --network ${NETWORK} -v ${CORE_ROOT}:${CORE_ROOT} -w ${CORE_ROOT}"
 fi
 
-if [[ "${CI}" == "true" ]]; then
-fi
-
 if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
     XDEBUG_MODE="-e XDEBUG_MODE=off"
     XDEBUG_CONFIG=" "
