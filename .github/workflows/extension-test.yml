@@ -104,6 +104,17 @@ jobs:
       - run: |
           bash bin/t3_run_tests.sh -s functional -d mariadb -p ${{ inputs.php-version-main }}
 
+  'php-acceptance-tests-mariadb':
+    name: 'Acceptance tests on MariaDB'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_13
+      - run: |
+          rm -f .Build/Web/typo3/sysext/* .Build/Web/typo3conf/ext/*
+          composer run post-autoload-dump
+          bash bin/t3_run_tests.sh -s acceptance -d mariadb -p ${{ env.MAIN_PHP_VERSION }} -b docker
+
   'php-lint':
     name: 'PHP linting'
     strategy:
