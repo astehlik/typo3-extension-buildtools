@@ -37,7 +37,8 @@
 	},
 	"autoload": {
 		"psr-4": {
-			"De\\SWebhosting\\Buildtools\\": "src/"
+			"De\\SWebhosting\\Buildtools\\": "src/",
+			"TYPO3\\JsonResponse\\": "../../typo3/testing-framework/Resources/Core/Functional/Extensions/json_response/Classes"
 		}
 	},
 	"bin": [
