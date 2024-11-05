@@ -138,6 +138,7 @@ jobs:
         with:
           php_version: '${{ inputs.php-version-main }}'
       - run: |
+          php bin/codecept build -c Tests/codeception.yml
           bash bin/t3_run_tests.sh -s phpstan -p ${{ inputs.php-version-main }}
 
   'typo3-scan':
