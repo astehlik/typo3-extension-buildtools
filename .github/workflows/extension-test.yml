@@ -102,7 +102,7 @@ jobs:
         with:
           php_version: ${{ inputs.php-version-main }}
       - run: |
-          bash bin/t3_run_tests.sh -s functional -d mariadb -p ${{ inputs.php-version-main }}
+          bash bin/t3_run_tests.sh -s functional -d mariadb -b docker -p ${{ inputs.php-version-main }}
 
   'php-acceptance-tests-mariadb':
     name: 'Acceptance tests on MariaDB'
@@ -113,7 +113,7 @@ jobs:
       - run: |
           rm -f .Build/Web/typo3/sysext/* .Build/Web/typo3conf/ext/*
           composer run post-autoload-dump
-          bash bin/t3_run_tests.sh -s acceptance -d mariadb -p ${{ inputs.php-version-main }} -b docker
+          bash bin/t3_run_tests.sh -s acceptance -d mariadb -b docker -p ${{ inputs.php-version-main }} -b docker
 
   'php-lint':
     name: 'PHP linting'
