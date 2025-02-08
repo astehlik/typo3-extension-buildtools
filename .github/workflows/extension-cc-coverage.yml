@@ -40,7 +40,7 @@ jobs:
         with:
           php_version: ${{ inputs.php-version-main }}
       - run: |
-          bash bin/t3_run_tests.sh -s functional -d mariadb -p ${{ inputs.php-version-main }} -X coverage -- --coverage-clover Logs/clover-functional.xml --coverage-filter ../Classes
+          bash bin/t3_run_tests.sh -s functional -d mariadb -b docker -p ${{ inputs.php-version-main }} -X coverage -- --coverage-clover Logs/clover-functional.xml --coverage-filter ../Classes
       - uses: actions/upload-artifact@v4
         with:
           name: coverage-functional
