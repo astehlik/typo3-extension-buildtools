@@ -7,7 +7,7 @@ on:
       php-version-main:
         description: 'Main PHP version'
         required: false
-        default: '8.3'
+        default: '8.4'
         type: string
     secrets:
       CC_TEST_REPORTER_ID:

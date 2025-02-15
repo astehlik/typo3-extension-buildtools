@@ -7,12 +7,12 @@ on:
       php-version-main:
         description: 'Main PHP version'
         required: false
-        default: '8.3'
+        default: '8.4'
         type: string
       php-versions:
         description: 'JSON encoded array of PHP versions'
         required: false
-        default: '["8.2", "8.3"]'
+        default: '["8.2", "8.3", "8.4"]'
         type: string
     secrets:
       CC_TEST_REPORTER_ID:
