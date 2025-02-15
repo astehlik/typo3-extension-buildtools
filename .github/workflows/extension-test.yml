@@ -61,9 +61,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_13
         with:
-          php_version: '${{ inputs.php-version-main }}'
+          php_version: '8.3'
       - run: |
-          bash bin/t3_run_tests.sh -s cgl -n -p ${{ inputs.php-version-main }}
+          bash bin/t3_run_tests.sh -s cgl -n -p 8.3
 
   'php-unit-tests':
     name: 'PHP Unit tests'
