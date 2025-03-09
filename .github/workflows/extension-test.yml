@@ -113,7 +113,7 @@ jobs:
       - run: |
           rm -f .Build/Web/typo3/sysext/* .Build/Web/typo3conf/ext/*
           composer run post-autoload-dump
-          bash bin/t3_run_tests.sh -s acceptance -d mariadb -b docker -p ${{ inputs.php-version-main }} -b docker
+          test ! -f Tests/codeception.yml && echo "Skipping acceptance tests" || bash bin/t3_run_tests.sh -s acceptance -d mariadb -b docker -p ${{ inputs.php-version-main }} -b docker
 
   'php-lint':
     name: 'PHP linting'
