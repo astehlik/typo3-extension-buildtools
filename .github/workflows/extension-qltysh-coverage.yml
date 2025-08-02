@@ -1,5 +1,5 @@
 ---
-name: Code Climate coverage
+name: Qlty coverage
 
 on:
   workflow_call:
@@ -10,8 +10,8 @@ on:
         default: '8.4'
         type: string
     secrets:
-      CC_TEST_REPORTER_ID:
-        description: 'Code Climate Test Reporter ID'
+      QLTY_COVERAGE_TOKEN:
+        description: 'Qlty Coverage Token'
         required: true
 
 jobs:
@@ -48,13 +48,11 @@ jobs:
           retention-days: 1
 
   'coverage-upload':
-    name: Upload coverage report to Code Climage
+    name: Upload coverage report to Qlty
     needs:
       - coverage-phpunit
       - coverage-functional
     runs-on: ubuntu-latest
-    env:
-      CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
@@ -63,14 +61,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: coverage-functional
-      - run: curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-      - run: chmod +x ./cc-test-reporter
-      - run: ./cc-test-reporter before-build
-      - run: |
-          ./cc-test-reporter format-coverage -t clover -o clover-unit.json clover-unit.xml
-      - run: |
-          ./cc-test-reporter format-coverage -t clover -o clover-functional.json clover-functional.xml
-      - run: |
-          ./cc-test-reporter sum-coverage --parts=2 --output=clover-sum.json clover-unit.json clover-functional.json
-      - run: |
-          ./cc-test-reporter upload-coverage --input=clover-sum.json
+      - uses: qltysh/qlty-action/coverage@v1
+        with:
+          token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
+          files: target/lcov.info
