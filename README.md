@@ -3,7 +3,7 @@
 Test your TYPO3 Extensions with the utilities provided by the TYPO3 core using:
 
 * the `typo3/testing-framework` package
-* `docker` and `docker-compose`
+* `docker` and `docker compose`
 * the `typo3gmbh/php*` docker images
 
 **Hint 1:** currently each version of the tools only supports **one** TYPO3 core version.
@@ -175,7 +175,7 @@ Important! For this to work you need to add the `--service-ports` flat to the `d
 in `t3_run_tests.sh`. The final command looks like this:
 
 ```bash
-docker-compose run --service-ports acceptance_backend_mariadb10
+docker compose run --service-ports acceptance_backend_mariadb10
 ```
 
 This config needs to be added to the `docker-compose.yml` file:

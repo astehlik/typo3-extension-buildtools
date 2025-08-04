@@ -10,7 +10,7 @@ if [[ -z "${TYPO3_EXTENSION_KEY}" ]]; then
 fi
 
 # Function to write a .env file in Build/testing-docker/local
-# This is read by docker-compose and vars defined here are
+# This is read by docker compose and vars defined here are
 # used in Build/testing-docker/local/docker-compose.yml
 setUpDockerComposeDotEnv() {
     # Delete possibly existing local .env file if exists
@@ -19,7 +19,7 @@ setUpDockerComposeDotEnv() {
     {
         echo "COMPOSE_PROJECT_NAME=${TYPO3_EXTENSION_KEY}"
         # To prevent access rights of files created by the testing, the docker image later
-        # runs with the same user that is currently executing the script. docker-compose can't
+        # runs with the same user that is currently executing the script. docker compose can't
         # use $UID directly itself since it is a shell variable and not an env variable, so
         # we have to set it explicitly here.
         echo "HOST_UID=$(id -u)"
@@ -127,7 +127,7 @@ a docker based test environment. Handles execution of single test files, sending
 xdebug information to a local IDE and more.
 
 Recommended docker version is >=20.10 for xdebug break pointing to work reliably, and
-a recent docker-compose (tested >=1.21.2) is needed.
+a recent docker compose (tested >=1.21.2) is needed.
 
 Usage: $0 [options] [file]
 
@@ -307,9 +307,9 @@ Examples:
     ./.Build/bin/t3_run_tests.sh -s acceptance typo3/sysext/core/Tests/Acceptance/Application/Login/BackendLoginCest.php:loginButtonMouseOver
 EOF
 
-# Test if docker-compose exists, else exit out with error
-if ! type "docker-compose" > /dev/null; then
-    echo "This script relies on docker and docker-compose. Please install" >&2
+# Test if docker compose exists, else exit out with error
+if ! type "docker" > /dev/null; then
+    echo "This script relies on docker. Please install" >&2
     exit 1
 fi
 
@@ -489,29 +489,29 @@ case ${TEST_SUITE} in
         handleDbmsAndDriverOptions
         setUpDockerComposeDotEnv
         if [ "${CHUNKS}" -gt 1 ]; then
-            docker-compose run acceptance_split
+            docker compose run acceptance_split
         fi
         case ${DBMS} in
             mysql)
                 echo "Using driver: ${DATABASE_DRIVER}"
-                docker-compose run prepare_acceptance_application_mysql
-                docker-compose run acceptance_application_mysql
+                docker compose run prepare_acceptance_application_mysql
+                docker compose run acceptance_application_mysql
                 SUITE_EXIT_CODE=$?
                 ;;
             mariadb)
                 echo "Using driver: ${DATABASE_DRIVER}"
-                docker-compose run prepare_acceptance_application_mariadb
-                docker-compose run acceptance_application_mariadb
+                docker compose run prepare_acceptance_application_mariadb
+                docker compose run acceptance_application_mariadb
                 SUITE_EXIT_CODE=$?
                 ;;
             postgres)
-                docker-compose run prepare_acceptance_application_postgres
-                docker-compose run acceptance_application_postgres
+                docker compose run prepare_acceptance_application_postgres
+                docker compose run acceptance_application_postgres
                 SUITE_EXIT_CODE=$?
                 ;;
             sqlite)
-                docker-compose run prepare_acceptance_application_sqlite
-                docker-compose run acceptance_application_sqlite
+                docker compose run prepare_acceptance_application_sqlite
+                docker compose run acceptance_application_sqlite
                 SUITE_EXIT_CODE=$?
                 ;;
             *)
@@ -520,19 +520,19 @@ case ${TEST_SUITE} in
                 echo "call \"./.Build/bin/t3_run_tests.sh -h\" to display help and valid options" >&2
                 exit 1
         esac
-        docker-compose down
+        docker compose down
         ;;
     buildCss)
         setUpDockerComposeDotEnv
-        docker-compose run build_css
+        docker compose run build_css
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        docker compose down
         ;;
     buildJavascript)
         setUpDockerComposeDotEnv
-        docker-compose run build_javascript
+        docker compose run build_javascript
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        docker compose down
         ;;
     cgl)
         # Active dry-run for cgl needs not "-n" but specific options
@@ -540,87 +540,87 @@ case ${TEST_SUITE} in
             CGLCHECK_DRY_RUN="--dry-run --diff"
         fi
         setUpDockerComposeDotEnv
-        docker-compose run cgl_all
+        docker compose run cgl_all
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        docker compose down
         ;;
     cglGit)
         setUpDockerComposeDotEnv
-        docker-compose run cgl_git
+        docker compose run cgl_git
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        docker compose down
         ;;
     checkAnnotations)
         setUpDockerComposeDotEnv
-        docker-compose run check_annotations
+        docker compose run check_annotations
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        docker compose down
         ;;
     checkTestMethodsPrefix)
         setUpDockerComposeDotEnv
-        docker-compose run check_test_methods_prefix
+        docker compose run check_test_methods_prefix
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        docker compose down
         ;;
     checkBom)
         setUpDockerComposeDotEnv
-        docker-compose run check_bom
+        docker compose run check_bom
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        docker compose down
         ;;
     checkComposer)
         setUpDockerComposeDotEnv
-        docker-compose run check_composer
+        docker compose run check_composer
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        docker compose down
         ;;
     checkExceptionCodes)
         setUpDockerComposeDotEnv
-        docker-compose run check_exception_codes
+        docker compose run check_exception_codes
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        docker compose down
         ;;
     checkExtensionScannerRst)
         setUpDockerComposeDotEnv
-        docker-compose run check_extension_scanner_rst
+        docker compose run check_extension_scanner_rst
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        docker compose down
         ;;
     checkFilePathLength)
         setUpDockerComposeDotEnv
-        docker-compose run check_file_path_length
+        docker compose run check_file_path_length
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        docker compose down
         ;;
     checkGitSubmodule)
         setUpDockerComposeDotEnv
-        docker-compose run check_git_submodule
+        docker compose run check_git_submodule
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        docker compose down
         ;;
     checkGruntClean)
         setUpDockerComposeDotEnv
-        docker-compose run check_grunt_clean
+        docker compose run check_grunt_clean
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        docker compose down
         ;;
     checkNamespaceIntegrity)
         setUpDockerComposeDotEnv
-        docker-compose run check_namespace_integrity
+        docker compose run check_namespace_integrity
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        docker compose down
         ;;
     checkPermissions)
         setUpDockerComposeDotEnv
-        docker-compose run check_permissions
+        docker compose run check_permissions
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        docker compose down
         ;;
     checkRst)
         setUpDockerComposeDotEnv
-        docker-compose run check_rst
+        docker compose run check_rst
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        docker compose down
         ;;
     clean)
         cleanBuildFiles
@@ -642,65 +642,65 @@ case ${TEST_SUITE} in
         ;;
     composerInstall)
         setUpDockerComposeDotEnv
-        docker-compose run composer_install
+        docker compose run composer_install
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        docker compose down
         ;;
     composerInstallMax)
         setUpDockerComposeDotEnv
-        docker-compose run composer_install_max
+        docker compose run composer_install_max
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        docker compose down
         ;;
     composerInstallMin)
         setUpDockerComposeDotEnv
-        docker-compose run composer_install_min
+        docker compose run composer_install_min
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        docker compose down
         ;;
     composerNormalize)
         if [ -n "${CGLCHECK_DRY_RUN}" ]; then
             CGLCHECK_DRY_RUN="--dry-run"
         fi
         setUpDockerComposeDotEnv
-        docker-compose run composer_normalize
+        docker compose run composer_normalize
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        docker compose down
         ;;
     composerTestDistribution)
         setUpDockerComposeDotEnv
-        docker-compose run composer_test_distribution
+        docker compose run composer_test_distribution
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        docker compose down
         ;;
     composerValidate)
         setUpDockerComposeDotEnv
-        docker-compose run composer_validate
+        docker compose run composer_validate
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        docker compose down
         ;;
     functional)
         handleDbmsAndDriverOptions
         setUpDockerComposeDotEnv
         if [ "${CHUNKS}" -gt 0 ]; then
-            docker-compose run functional_split
+            docker compose run functional_split
         fi
         case ${DBMS} in
             mariadb)
                 echo "Using driver: ${DATABASE_DRIVER}"
-                docker-compose run prepare_functional_mariadb
-                docker-compose run functional_mariadb
+                docker compose run prepare_functional_mariadb
+                docker compose run functional_mariadb
                 SUITE_EXIT_CODE=$?
                 ;;
             mysql)
                 echo "Using driver: ${DATABASE_DRIVER}"
-                docker-compose run prepare_functional_mysql
-                docker-compose run functional_mysql
+                docker compose run prepare_functional_mysql
+                docker compose run functional_mysql
                 SUITE_EXIT_CODE=$?
                 ;;
             postgres)
-                docker-compose run prepare_functional_postgres
-                docker-compose run functional_postgres
+                docker compose run prepare_functional_postgres
+                docker compose run functional_postgres
                 SUITE_EXIT_CODE=$?
                 ;;
             sqlite)
@@ -709,8 +709,8 @@ case ${TEST_SUITE} in
                 # root if docker creates it. Thank you, docker. We create the path beforehand
                 # to avoid permission issues on host filesystem after execution.
                 mkdir -p "${CORE_ROOT}/typo3temp/var/tests/functional-sqlite-dbs/"
-                docker-compose run prepare_functional_sqlite
-                docker-compose run functional_sqlite
+                docker compose run prepare_functional_sqlite
+                docker compose run functional_sqlite
                 SUITE_EXIT_CODE=$?
                 ;;
             *)
@@ -719,7 +719,7 @@ case ${TEST_SUITE} in
                 echo "call \"./.Build/bin/t3_run_tests.sh -h\" to display help and valid options" >&2
                 exit 1
         esac
-        docker-compose down
+        docker compose down
         ;;
     functionalDeprecated)
         handleDbmsAndDriverOptions
@@ -727,19 +727,19 @@ case ${TEST_SUITE} in
         case ${DBMS} in
             mariadb)
                 echo "Using driver: ${DATABASE_DRIVER}"
-                docker-compose run prepare_functional_mariadb
-                docker-compose run functional_deprecated_mariadb
+                docker compose run prepare_functional_mariadb
+                docker compose run functional_deprecated_mariadb
                 SUITE_EXIT_CODE=$?
                 ;;
             mysql)
                 echo "Using driver: ${DATABASE_DRIVER}"
-                docker-compose run prepare_functional_mysql
-                docker-compose run functional_deprecated_mysql
+                docker compose run prepare_functional_mysql
+                docker compose run functional_deprecated_mysql
                 SUITE_EXIT_CODE=$?
                 ;;
             postgres)
-                docker-compose run prepare_functional_postgres
-                docker-compose run functional_deprecated_postgres
+                docker compose run prepare_functional_postgres
+                docker compose run functional_deprecated_postgres
                 SUITE_EXIT_CODE=$?
                 ;;
             sqlite)
@@ -748,8 +748,8 @@ case ${TEST_SUITE} in
                 # root if docker creates it. Thank you, docker. We create the path beforehand
                 # to avoid permission issues on host filesystem after execution.
                 mkdir -p "${CORE_ROOT}/typo3temp/var/tests/functional-sqlite-dbs/"
-                docker-compose run prepare_functional_sqlite
-                docker-compose run functional_deprecated_sqlite
+                docker compose run prepare_functional_sqlite
+                docker compose run functional_deprecated_sqlite
                 SUITE_EXIT_CODE=$?
                 ;;
             *)
@@ -758,73 +758,73 @@ case ${TEST_SUITE} in
                 echo "call \"./.Build/bin/t3_run_tests.sh -h\" to display help and valid options" >&2
                 exit 1
         esac
-        docker-compose down
+        docker compose down
         ;;
     lintPhp)
         setUpDockerComposeDotEnv
-        docker-compose run lint_php
+        docker compose run lint_php
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        docker compose down
         ;;
     lintScss)
         setUpDockerComposeDotEnv
-        docker-compose run lint_scss
+        docker compose run lint_scss
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        docker compose down
         ;;
     lintTypescript)
         setUpDockerComposeDotEnv
-        docker-compose run lint_typescript
+        docker compose run lint_typescript
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        docker compose down
         ;;
     lintHtml)
         setUpDockerComposeDotEnv
-        docker-compose run lint_html
+        docker compose run lint_html
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        docker compose down
         ;;
     listExceptionCodes)
         setUpDockerComposeDotEnv
-        docker-compose run list_exception_codes
+        docker compose run list_exception_codes
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        docker compose down
         ;;
     phpstan)
         setUpDockerComposeDotEnv
-        docker-compose run phpstan
+        docker compose run phpstan
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        docker compose down
         ;;
     phpstanGenerateBaseline)
         setUpDockerComposeDotEnv
-        docker-compose run phpstan_generate_baseline
+        docker compose run phpstan_generate_baseline
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        docker compose down
         ;;
     unit)
         setUpDockerComposeDotEnv
-        docker-compose run unit
+        docker compose run unit
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        docker compose down
         ;;
     unitDeprecated)
         setUpDockerComposeDotEnv
-        docker-compose run unitDeprecated
+        docker compose run unitDeprecated
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        docker compose down
         ;;
     unitJavascript)
         setUpDockerComposeDotEnv
-        docker-compose run unitJavascript
+        docker compose run unitJavascript
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        docker compose down
         ;;
     unitRandom)
         setUpDockerComposeDotEnv
-        docker-compose run unitRandom
+        docker compose run unitRandom
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        docker compose down
         ;;
     update)
         # prune unused, dangling local volumes
