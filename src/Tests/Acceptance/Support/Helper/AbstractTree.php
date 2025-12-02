@@ -76,7 +76,7 @@ abstract class AbstractTree
             $toggled = false;
 
             try {
-                // Collapse last opened node element, that is not the root (=first node)
+                // collapse last opened node element, that is not the root (=first node)
                 $context->findElement(
                     WebDriverBy::xpath(
                         '(.//*[position()>1 and @role="treeitem" and'
@@ -85,11 +85,11 @@ abstract class AbstractTree
                 )->click();
                 $toggled = true;
             } catch (NoSuchElementException $e) {
-                // Element not found so it may be already opened...
+                // element not found so it may be already opened...
             } catch (ElementNotVisibleException $e) {
-                // Element not found so it may be already opened...
+                // element not found so it may be already opened...
             } catch (ElementNotInteractableException $e) {
-                // Another possible exception if the chevron isn't there ... depends on facebook driver version
+                // another possible exception if the chevron isn't there ... depends on facebook driver version
             }
         } while ($toggled);
 
@@ -130,11 +130,11 @@ abstract class AbstractTree
                 ),
             )->click();
         } catch (NoSuchElementException $e) {
-            // Element not found so it may be already opened...
+            // element not found so it may be already opened...
         } catch (ElementNotVisibleException $e) {
-            // Element not found so it may be already opened...
+            // element not found so it may be already opened...
         } catch (ElementNotInteractableException $e) {
-            // Another possible exception if the chevron isn't there ... depends on facebook driver version
+            // another possible exception if the chevron isn't there ... depends on facebook driver version
         }
 
         return $context;
