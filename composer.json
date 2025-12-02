@@ -9,7 +9,7 @@
 		"codeception/codeception": "^5.1.2",
 		"codeception/module-asserts": "^3.0.0",
 		"codeception/module-webdriver": "^4.0.2",
-		"de-swebhosting/php-codestyle": "^5.1.2",
+		"de-swebhosting/php-codestyle": "^6.0.0",
 		"ergebnis/composer-normalize": "^2.42",
 		"friendsofphp/php-cs-fixer": "^3.64.0",
 		"friendsoftypo3/phpstan-typo3": "^0.9.0",
