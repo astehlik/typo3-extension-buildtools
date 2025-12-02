@@ -51,9 +51,7 @@ abstract class AbstractTree
     {
         $I = $this->tester;
         $I->switchToIFrame();
-        return $I->executeInSelenium(static function (RemoteWebDriver $webdriver) {
-            return $webdriver->findElement(WebDriverBy::cssSelector(static::$treeSelector));
-        });
+        return $I->executeInSelenium(static fn(RemoteWebDriver $webdriver) => $webdriver->findElement(WebDriverBy::cssSelector(static::$treeSelector)));
     }
 
     /**
@@ -121,14 +119,9 @@ abstract class AbstractTree
         $I->see($nodeText, static::$treeItemSelector);
 
         /** @var RemoteWebElement $context */
-        $context = $I->executeInSelenium(static function () use (
-            $nodeText,
-            $context
-        ) {
-            return $context->findElement(
-                WebDriverBy::xpath('//*[@class=\'node-name\'][text()=\'' . $nodeText . '\']/../../..'),
-            );
-        });
+        $context = $I->executeInSelenium(static fn() => $context->findElement(
+            WebDriverBy::xpath('//*[@class=\'node-name\'][text()=\'' . $nodeText . '\']/../../..'),
+        ));
 
         try {
             $context->findElement(

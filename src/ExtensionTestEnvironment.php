@@ -44,7 +44,7 @@ class ExtensionTestEnvironment
         $sysextDir = $webDir . DIRECTORY_SEPARATOR . 'typo3' . DIRECTORY_SEPARATOR . 'sysext';
 
         if (!is_dir($extDir)) {
-            mkdir($extDir, 0755, true);
+            mkdir($extDir, 0o755, true);
         }
 
         $extensionSymlink = $extDir . DIRECTORY_SEPARATOR . $extensionKey;
@@ -53,7 +53,7 @@ class ExtensionTestEnvironment
         }
 
         if (!is_dir($sysextDir)) {
-            mkdir($sysextDir, 0755, true);
+            mkdir($sysextDir, 0o755, true);
         }
 
         $packageArtifactPath = $vendorDir . DIRECTORY_SEPARATOR . 'typo3' . DIRECTORY_SEPARATOR . 'PackageArtifact.php';
