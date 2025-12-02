@@ -126,7 +126,7 @@ abstract class AbstractTree
         try {
             $context->findElement(
                 WebDriverBy::cssSelector(
-                    '.node-toggle > typo3-backend-icon[identifier=\'actions-chevron-right\']',
+                    '.node-toggle > typo3-backend-icon[identifier=\'actions-chevron-end\']',
                 ),
             )->click();
         } catch (NoSuchElementException $e) {
