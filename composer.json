@@ -31,10 +31,6 @@
 	"require-dev": {
 		"composer/composer": "^2.5"
 	},
-	"suggest": {
-		"de-swebhosting/php-codestyle": "Required to run t3_check_codestyle.sh",
-		"squizlabs/php_codesniffer": "Required to run t3_check_codestyle.sh"
-	},
 	"autoload": {
 		"psr-4": {
 			"De\\SWebhosting\\Buildtools\\": "src/",
