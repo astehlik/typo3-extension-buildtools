@@ -48,7 +48,7 @@ After that you can run the different commands.
 
 - `t3_run_tests.sh` - For running Unit, Functional and Acceptance tests
 - `t3_check_codestyle.sh` - For checking / fixing PHP code style via
-  [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer)
+  [PHP_CodeSniffer](https://github.com/PHPCSStandards/PHP_CodeSniffer)
 - `t3_prepare_release.sh` - Prepare docs and `ext_emconf.php` for a release
 - `t3_deploy_to_ter.sh` - Upload Extension to TER
 
