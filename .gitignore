@@ -1,6 +1,7 @@
 /node_modules
 /public
 /testing-docker/.env
+/var
 /vendor
 /composer.lock
 /.php-cs-fixer.cache
