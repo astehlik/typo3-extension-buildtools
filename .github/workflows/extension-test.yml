@@ -17,7 +17,7 @@ on:
       php-versions:
         description: 'JSON encoded array of PHP versions'
         required: false
-        default: '["8.2", "8.3", "8.4"]'
+        default: '["8.2", "8.3", "8.4", "8.5"]'
         type: string
     secrets:
       CC_TEST_REPORTER_ID:
