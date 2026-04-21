@@ -157,4 +157,5 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '${{ inputs.php-version-main }}'
+      - run: rm -Rf var
       - run: php bin/typo3scan scan .
