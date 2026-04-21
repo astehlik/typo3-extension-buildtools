@@ -1,4 +1,8 @@
 {
+  "scripts": {
+    "prettier:check": "prettier --check .",
+    "prettier:fix": "prettier --write ."
+  },
   "dependencies": {
     "prettier": "^3.3.3"
   }
