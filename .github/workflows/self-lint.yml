@@ -10,7 +10,7 @@ jobs:
     name: 'Lint composer.json'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./actions/composer
         with:
           php_version: 8.4
@@ -21,7 +21,7 @@ jobs:
     name: 'Lint prettier'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Cache node modules
         id: cache-npm
         uses: actions/cache@v4
@@ -38,7 +38,7 @@ jobs:
     name: 'Lint PHP CS Fixer'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./actions/composer
         with:
           php_version: 8.2

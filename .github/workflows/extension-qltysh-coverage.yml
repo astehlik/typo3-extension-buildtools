@@ -19,13 +19,13 @@ jobs:
     name: 'Test coverage by Unit Tests'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_13
         with:
           php_version: ${{ inputs.php-version-main }}
       - run: |
           bash bin/t3_run_tests.sh -s unit -p ${{ inputs.php-version-main }} -X coverage -- --coverage-clover Logs/clover-unit.xml --coverage-filter ../Classes
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: coverage-phpunit
           path: Logs/clover-unit.xml
@@ -35,13 +35,13 @@ jobs:
     name: 'Test coverage by Functional Tests'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_13
         with:
           php_version: ${{ inputs.php-version-main }}
       - run: |
           bash bin/t3_run_tests.sh -s functional -d mariadb -b docker -p ${{ inputs.php-version-main }} -X coverage -- --coverage-clover Logs/clover-functional.xml --coverage-filter ../Classes
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: coverage-functional
           path: Logs/clover-functional.xml
@@ -54,14 +54,14 @@ jobs:
       - coverage-functional
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v6
+      - uses: actions/download-artifact@v8
         with:
           name: coverage-phpunit
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: coverage-functional
-      - uses: qltysh/qlty-action/coverage@v1
+      - uses: qltysh/qlty-action/coverage@v2
         with:
           token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
           files: clover-*.xml
