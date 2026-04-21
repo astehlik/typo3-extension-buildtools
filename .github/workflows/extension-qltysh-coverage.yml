@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_13
+      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14
         with:
           php_version: ${{ inputs.php-version-main }}
       - run: |
@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_13
+      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14
         with:
           php_version: ${{ inputs.php-version-main }}
       - run: |

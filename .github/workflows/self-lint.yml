@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - TYPO3_13
+      - TYPO3_14
 
 jobs:
   lint-composer:
