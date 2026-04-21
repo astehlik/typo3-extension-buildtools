@@ -19,6 +19,11 @@ on:
         required: false
         default: '["8.2", "8.3", "8.4", "8.5"]'
         type: string
+      typo3-scan-ignore:
+        description: 'Ignore paths for typo3scan'
+        required: false
+        default: ''
+        type: string
     secrets:
       CC_TEST_REPORTER_ID:
         description: 'Code Climate Test Reporter ID'
@@ -158,4 +163,9 @@ jobs:
         with:
           php-version: '${{ inputs.php-version-main }}'
       - run: rm -Rf var
-      - run: php bin/typo3scan scan .
+      - run: |
+          if [ -n "${{ inputs.typo3-scan-ignore }}" ]; then
+            php bin/typo3scan scan --ignore "${{ inputs.typo3-scan-ignore }}" .
+          else
+            php bin/typo3scan scan .
+          fi
