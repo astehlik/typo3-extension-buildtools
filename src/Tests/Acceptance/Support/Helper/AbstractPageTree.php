@@ -19,7 +19,7 @@ namespace De\SWebhosting\Buildtools\Tests\Acceptance\Support\Helper;
 
 abstract class AbstractPageTree extends AbstractTree
 {
-    public static $treeSelector = '#typo3-pagetree-treeContainer';
+    public static $treeSelector = '#typo3-pagetree-tree';
 
     /**
      * Get node identifier of given page.
