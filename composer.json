@@ -25,7 +25,7 @@
 		"typo3/cms-fluid": "^14.0",
 		"typo3/cms-frontend": "^14.0",
 		"typo3/cms-install": "^14.0",
-		"typo3/testing-framework": "dev-main"
+		"typo3/testing-framework": "^9.5"
 	},
 	"require-dev": {
 		"composer/composer": "^2.9.7"
