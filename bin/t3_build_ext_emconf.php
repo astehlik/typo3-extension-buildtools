@@ -40,6 +40,13 @@ if (!is_string($typo3Constraint) || $typo3Constraint === '') {
     exit(1);
 }
 
+// The last 3 TYPO3 LTS versions and their highest ("latest") minor version.
+$typo3LtsMinors = [
+    14 => 3,
+    13 => 4,
+    12 => 4,
+];
+
 if (!preg_match('/(\\d+)\\.(\\d+)/', $typo3Constraint, $matches)) {
     fwrite(STDERR, "Could not parse a TYPO3 version from constraint \"{$typo3Constraint}\".\n");
 
@@ -48,7 +55,22 @@ if (!preg_match('/(\\d+)\\.(\\d+)/', $typo3Constraint, $matches)) {
 // Assumes a single supported TYPO3 major/minor per branch, matching this
 // project's "one core version per buildtools version" convention.
 [, $major, $minor] = $matches;
-$typo3DependsRange = "{$major}.{$minor}.0-{$major}.99.99";
+
+// A "^" constraint allows any minor release within the major version, so the
+// upper bound is capped at the latest known LTS minor instead of staying
+// at the constraint's own minor version.
+$upperMinor = $minor;
+if (str_starts_with($typo3Constraint, '^')) {
+    if (!isset($typo3LtsMinors[(int)$major])) {
+        fwrite(STDERR, "No known latest minor version for TYPO3 major version {$major}.\n");
+
+        exit(1);
+    }
+
+    $upperMinor = $typo3LtsMinors[(int)$major];
+}
+
+$typo3DependsRange = "{$major}.{$minor}.0-{$major}.{$upperMinor}.99";
 
 $description = $composerJson['description'] ?? '';
 
