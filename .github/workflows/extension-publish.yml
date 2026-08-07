@@ -1,0 +1,58 @@
+---
+name: Publish to TER
+
+on:
+  workflow_call:
+    inputs:
+      extension-key:
+        description: 'TYPO3 extension key'
+        required: true
+        type: string
+      php-version:
+        description: 'PHP version used to run the publish tooling'
+        required: false
+        default: '8.4'
+        type: string
+    secrets:
+      TYPO3_API_TOKEN:
+        description: 'TER API token'
+        required: true
+
+jobs:
+  publish:
+    name: Publish new version to TER
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    env:
+      TYPO3_EXTENSION_KEY: ${{ inputs.extension-key }}
+      TYPO3_API_TOKEN: ${{ secrets.TYPO3_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14
+        with:
+          php_version: '${{ inputs.php-version }}'
+
+      - name: Get version
+        id: get-version
+        run: echo "version=$(bash bin/t3_get_tag_version.sh "${{ github.ref }}")" >> $GITHUB_ENV
+
+      - name: Get comment
+        id: get-comment
+        run: |
+          delimiter="COMMENT_EOF_${GITHUB_RUN_ID}_${RANDOM}"
+          echo "comment<<$delimiter" >> $GITHUB_ENV
+          bash bin/t3_get_tag_comment.sh "${{ env.version }}" >> $GITHUB_ENV
+          echo "$delimiter" >> $GITHUB_ENV
+
+      - name: Install tailor
+        run: composer global require typo3/tailor --prefer-dist --no-progress --no-suggest
+
+      - name: Set version in composer.json
+        run: composer config version ${{ env.version }}
+
+      - name: Cleanup repository for TER upload
+        run: touch ready_for_release.txt && bash bin/t3_cleanup_for_ter.sh
+
+      - name: Publish to TER
+        run: php ~/.composer/vendor/bin/tailor ter:publish --comment "${{ env.comment }}" ${{ env.version }}

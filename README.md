@@ -50,30 +50,46 @@ After that you can run the different commands.
 - `t3_check_codestyle.sh` - For checking / fixing PHP code style via
   [PHP_CodeSniffer](https://github.com/PHPCSStandards/PHP_CodeSniffer)
 - `t3_prepare_release.sh` - Prepare docs and `ext_emconf.php` for a release
-- `t3_deploy_to_ter.sh` - Upload Extension to TER
+- `t3_deploy_to_ter.sh` - Check out a tag and publish it to TER, see [Deploy to TER](#deploy-to-ter)
 
-## Run in travis
+## Run in GitHub Actions
 
-Have a look at the [doc/travis-sample.yml](doc/travis-sample.yml) file. You need to
+Call the reusable workflows from a workflow file in your extension's `.github/workflows` directory:
 
-1. replace `<your_extension_key>` with the Extension key of your extension
-2. remove `[your_custom_codestyle]` or replace it with the name of the ruleset you want to use
-   for the code style checker (see [Code style checking](#code-style-checking)).
+```yaml
+name: CI
 
-The Example Travis CI config will
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
 
-- validate the `composer.json` file
-- check the code style of your PHP code
-- run Unit Tests for PHP 7.3 and 7.4
-- run functional Tests for PHP 7.3 and 7.4
-- run PHP linting for PHP 7.3 and 7.4
-- run acceptance tests for PHP 7.3 and 7.4
+jobs:
+  test:
+    uses: astehlik/typo3-extension-buildtools/.github/workflows/extension-test.yml@TYPO3_14
 
-It will also try to deploy your Extension to TER when a tag is pushed. You need to set your TYPO3 login data
-in Travis environment variables for this to work (see [Deploy to TER](#deploy-to-ter)).
+  publish:
+    needs: test
+    uses: astehlik/typo3-extension-buildtools/.github/workflows/extension-publish.yml@TYPO3_14
+    with:
+      extension-key: '<your_extension_key>'
+    secrets:
+      TYPO3_API_TOKEN: ${{ secrets.TYPO3_API_TOKEN }}
+```
 
-- `TYPO3_ORG_USERNAME`
-- `TYPO3_ORG_PASSWORD`
+[`extension-test.yml`](.github/workflows/extension-test.yml) will
+
+- validate and normalize the `composer.json` file
+- check the code style of your PHP code (PHP_CodeSniffer and PHP CS Fixer)
+- run PHP unit, functional and acceptance tests across the configured PHP versions
+- lint your PHP code
+- run PHPStan
+- scan for deprecated and breaking code using `typo3scan`
+
+[`extension-publish.yml`](.github/workflows/extension-publish.yml) publishes your extension to TER whenever
+a tag matching `v<major>.<minor>.<patch>` is pushed (see [Deploy to TER](#deploy-to-ter)). It needs a
+`TYPO3_API_TOKEN` secret with a valid TER API token.
 
 ## Write tests
 
@@ -239,11 +255,29 @@ bash .Build/bin/t3_prepare_release.sh "<semantic_version>"
 This will set the provided version number in `ext_emconf.php` and `Documentation/Settings.cfg` and create
 a new release using the `git flow release` commands.
 
-After that you can push all branches and tags. The pushed tag will be published to TER.
+After that you can push all branches and tags:
 
 ```bash
 git push && git push --tags && git checkout develop && git push
 ```
+
+Pushing a tag that matches `v<major>.<minor>.<patch>` (e.g. `v12.1.0`) triggers the reusable
+[`extension-publish.yml`](.github/workflows/extension-publish.yml) GitHub Actions workflow, which publishes
+that version to TER. It needs a `TYPO3_API_TOKEN` secret with a valid TER API token.
+
+To publish a tag manually instead (e.g. from your local machine), use `t3_deploy_to_ter.sh`:
+
+```bash
+export TYPO3_EXTENSION_KEY="<my_extension_key>"
+export TYPO3_API_TOKEN="<ter_api_token>"
+
+bash .Build/bin/t3_deploy_to_ter.sh v12.1.0
+```
+
+This checks out the given tag into a temporary git worktree, copies it into a plain (non-git) build
+directory under `work/`, determines the release comment from the tag message, and publishes it to TER
+after you confirm the prompt. Consumer extensions no longer need their own `Build/cleanup_for_ter.sh` —
+the cleanup step is now provided by buildtools itself.
 
 ## Credits
 

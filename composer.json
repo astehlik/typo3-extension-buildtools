@@ -38,7 +38,10 @@
 	},
 	"bin": [
 		"bin/t3_check_codestyle.sh",
+		"bin/t3_cleanup_for_ter.sh",
 		"bin/t3_deploy_to_ter.sh",
+		"bin/t3_get_tag_comment.sh",
+		"bin/t3_get_tag_version.sh",
 		"bin/t3_prepare_release.sh",
 		"bin/t3_run_tests.sh"
 	],
