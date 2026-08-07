@@ -60,6 +60,7 @@ $content = sprintf(
             'title' => %s,
             'description' => %s,
             'category' => 'misc',
+            'state' => 'stable',
             'version' => %s,
             'constraints' => [
                 'depends' => [
