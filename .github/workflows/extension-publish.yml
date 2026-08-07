@@ -27,29 +27,31 @@ jobs:
       TYPO3_EXTENSION_KEY: ${{ inputs.extension-key }}
       TYPO3_API_TOKEN: ${{ secrets.TYPO3_API_TOKEN }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
 
-      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14
+      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14 # zizmor: ignore[unpinned-uses] intentionally tracks this branch so consumers get composer-action updates automatically
         with:
           php_version: '${{ inputs.php-version }}'
 
       - name: Get version
         id: get-version
-        run: echo "version=$(bash bin/t3_get_tag_version.sh "${{ github.ref }}")" >> $GITHUB_ENV
+        run: echo "version=$(bash bin/t3_get_tag_version.sh "${GITHUB_REF}")" >> $GITHUB_ENV
 
       - name: Get comment
         id: get-comment
         run: |
           delimiter="COMMENT_EOF_${GITHUB_RUN_ID}_${RANDOM}"
           echo "comment<<$delimiter" >> $GITHUB_ENV
-          bash bin/t3_get_tag_comment.sh "${{ env.version }}" >> $GITHUB_ENV
+          bash bin/t3_get_tag_comment.sh "${version}" >> $GITHUB_ENV
           echo "$delimiter" >> $GITHUB_ENV
 
       - name: Install tailor
         run: composer global require typo3/tailor --prefer-dist --no-progress --no-suggest
 
       - name: Set version in composer.json
-        run: composer config version ${{ env.version }}
+        run: composer config version ${version}
 
       - name: Build ext_emconf.php
         run: php bin/t3_build_ext_emconf.php
@@ -58,4 +60,4 @@ jobs:
         run: touch ready_for_release.txt && bash bin/t3_cleanup_for_ter.sh
 
       - name: Publish to TER
-        run: php ~/.composer/vendor/bin/tailor ter:publish --comment "${{ env.comment }}" ${{ env.version }}
+        run: php ~/.composer/vendor/bin/tailor ter:publish --comment "${comment}" ${version}

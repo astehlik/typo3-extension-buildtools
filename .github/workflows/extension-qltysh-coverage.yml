@@ -19,13 +19,17 @@ jobs:
     name: 'Test coverage by Unit Tests'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14 # zizmor: ignore[unpinned-uses] intentionally tracks this branch so consumers get composer-action updates automatically
         with:
           php_version: ${{ inputs.php-version-main }}
       - run: |
-          bash bin/t3_run_tests.sh -s unit -p ${{ inputs.php-version-main }} -X coverage -- --coverage-clover Logs/clover-unit.xml --coverage-filter ../Classes
-      - uses: actions/upload-artifact@v7
+          bash bin/t3_run_tests.sh -s unit -p ${INPUTS_PHP_VERSION_MAIN} -X coverage -- --coverage-clover Logs/clover-unit.xml --coverage-filter ../Classes
+        env:
+          INPUTS_PHP_VERSION_MAIN: ${{ inputs.php-version-main }}
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: coverage-phpunit
           path: Logs/clover-unit.xml
@@ -35,13 +39,17 @@ jobs:
     name: 'Test coverage by Functional Tests'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14 # zizmor: ignore[unpinned-uses] intentionally tracks this branch so consumers get composer-action updates automatically
         with:
           php_version: ${{ inputs.php-version-main }}
       - run: |
-          bash bin/t3_run_tests.sh -s functional -d mariadb -b docker -p ${{ inputs.php-version-main }} -X coverage -- --coverage-clover Logs/clover-functional.xml --coverage-filter ../Classes
-      - uses: actions/upload-artifact@v7
+          bash bin/t3_run_tests.sh -s functional -d mariadb -b docker -p ${INPUTS_PHP_VERSION_MAIN} -X coverage -- --coverage-clover Logs/clover-functional.xml --coverage-filter ../Classes
+        env:
+          INPUTS_PHP_VERSION_MAIN: ${{ inputs.php-version-main }}
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: coverage-functional
           path: Logs/clover-functional.xml
@@ -54,14 +62,16 @@ jobs:
       - coverage-functional
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/download-artifact@v8
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: coverage-phpunit
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: coverage-functional
-      - uses: qltysh/qlty-action/coverage@v2
+      - uses: qltysh/qlty-action/coverage@08a0a862c159eae9b9003081da6663d96efef637 # v2
         with:
           token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
           files: clover-*.xml

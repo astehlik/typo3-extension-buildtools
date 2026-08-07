@@ -34,8 +34,10 @@ jobs:
     name: 'Composer validate'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14 # zizmor: ignore[unpinned-uses] intentionally tracks this branch so consumers get composer-action updates automatically
         with:
           php_version: '${{ inputs.php-version-main }}'
       - run: composer validate
@@ -44,8 +46,10 @@ jobs:
     name: 'Composer normalize'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14 # zizmor: ignore[unpinned-uses] intentionally tracks this branch so consumers get composer-action updates automatically
         with:
           php_version: '${{ inputs.php-version-main }}'
       - run: composer normalize --dry-run --diff
@@ -54,11 +58,13 @@ jobs:
     name: 'PHP_CodeSniffer check'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14 # zizmor: ignore[unpinned-uses] intentionally tracks this branch so consumers get composer-action updates automatically
         with:
           php_version: '${{ inputs.php-version-main }}'
-      - uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
         with:
           php-version: '${{ inputs.php-version-main }}'
       - run: |
@@ -68,12 +74,16 @@ jobs:
     name: 'PHP CS Fixer check'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14 # zizmor: ignore[unpinned-uses] intentionally tracks this branch so consumers get composer-action updates automatically
         with:
           php_version: '${{ inputs.php-version-min }}'
       - run: |
-          bash bin/t3_run_tests.sh -s cgl -n -p ${{ inputs.php-version-min }}
+          bash bin/t3_run_tests.sh -s cgl -n -p ${INPUTS_PHP_VERSION_MIN}
+        env:
+          INPUTS_PHP_VERSION_MIN: ${{ inputs.php-version-min }}
 
   'php-unit-tests':
     name: 'PHP Unit tests'
@@ -82,12 +92,16 @@ jobs:
         php_version: ${{ fromJson(inputs.php-versions) }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14 # zizmor: ignore[unpinned-uses] intentionally tracks this branch so consumers get composer-action updates automatically
         with:
           php_version: ${{ matrix.php_version }}
       - run: |
-          bash bin/t3_run_tests.sh -s unit -p ${{ matrix.php_version }}
+          bash bin/t3_run_tests.sh -s unit -p ${MATRIX_PHP_VERSION}
+        env:
+          MATRIX_PHP_VERSION: ${{ matrix.php_version }}
 
   'php-functional-tests-sqlite':
     name: 'Functional tests on SQLite'
@@ -96,34 +110,46 @@ jobs:
         php_version: ${{ fromJson(inputs.php-versions) }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14 # zizmor: ignore[unpinned-uses] intentionally tracks this branch so consumers get composer-action updates automatically
         with:
           php_version: '${{ matrix.php_version }}'
       - run: |
-          bash bin/t3_run_tests.sh -s functional -d sqlite -p ${{ matrix.php_version }}
+          bash bin/t3_run_tests.sh -s functional -d sqlite -p ${MATRIX_PHP_VERSION}
+        env:
+          MATRIX_PHP_VERSION: ${{ matrix.php_version }}
 
   'php-functional-tests-mariadb-main':
     name: 'Functional tests on MariaDB'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14 # zizmor: ignore[unpinned-uses] intentionally tracks this branch so consumers get composer-action updates automatically
         with:
           php_version: ${{ inputs.php-version-main }}
       - run: |
-          bash bin/t3_run_tests.sh -s functional -d mariadb -b docker -p ${{ inputs.php-version-main }}
+          bash bin/t3_run_tests.sh -s functional -d mariadb -b docker -p ${INPUTS_PHP_VERSION_MAIN}
+        env:
+          INPUTS_PHP_VERSION_MAIN: ${{ inputs.php-version-main }}
 
   'php-acceptance-tests-mariadb':
     name: 'Acceptance tests on MariaDB'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14 # zizmor: ignore[unpinned-uses] intentionally tracks this branch so consumers get composer-action updates automatically
       - run: |
           rm -f .Build/Web/typo3/sysext/* .Build/Web/typo3conf/ext/*
           composer run post-autoload-dump
-          test ! -f Tests/codeception.yml && echo "Skipping acceptance tests" || bash bin/t3_run_tests.sh -s acceptance -d mariadb -b docker -p ${{ inputs.php-version-main }} -b docker
+          test ! -f Tests/codeception.yml && echo "Skipping acceptance tests" || bash bin/t3_run_tests.sh -s acceptance -d mariadb -b docker -p ${INPUTS_PHP_VERSION_MAIN} -b docker
+        env:
+          INPUTS_PHP_VERSION_MAIN: ${{ inputs.php-version-main }}
 
   'php-lint':
     name: 'PHP linting'
@@ -132,40 +158,52 @@ jobs:
         php_version: ${{ fromJson(inputs.php-versions) }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14 # zizmor: ignore[unpinned-uses] intentionally tracks this branch so consumers get composer-action updates automatically
         with:
           php_version: ${{ matrix.php_version }}
       - run: |
-          bash bin/t3_run_tests.sh -s lintPhp -p ${{ matrix.php_version }}
+          bash bin/t3_run_tests.sh -s lintPhp -p ${MATRIX_PHP_VERSION}
+        env:
+          MATRIX_PHP_VERSION: ${{ matrix.php_version }}
 
   'phpstan':
     name: 'PHPStan'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14 # zizmor: ignore[unpinned-uses] intentionally tracks this branch so consumers get composer-action updates automatically
         with:
           php_version: '${{ inputs.php-version-main }}'
       - run: |
           test ! -f Tests/codeception.yml && echo "Skipping codeception build" || php bin/codecept build -c Tests/codeception.yml
-          bash bin/t3_run_tests.sh -s phpstan -p ${{ inputs.php-version-main }}
+          bash bin/t3_run_tests.sh -s phpstan -p ${INPUTS_PHP_VERSION_MAIN}
+        env:
+          INPUTS_PHP_VERSION_MAIN: ${{ inputs.php-version-main }}
 
   'typo3-scan':
     name: 'Scan for deprecated and breaking code using typo3scan'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14 # zizmor: ignore[unpinned-uses] intentionally tracks this branch so consumers get composer-action updates automatically
         with:
           php_version: '${{ inputs.php-version-main }}'
-      - uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
         with:
           php-version: '${{ inputs.php-version-main }}'
       - run: rm -Rf var
       - run: |
-          if [ -n "${{ inputs.typo3-scan-ignore }}" ]; then
-            php bin/typo3scan scan --ignore "${{ inputs.typo3-scan-ignore }}" .
+          if [ -n "${INPUTS_TYPO3_SCAN_IGNORE}" ]; then
+            php bin/typo3scan scan --ignore "${INPUTS_TYPO3_SCAN_IGNORE}" .
           else
             php bin/typo3scan scan .
           fi
+        env:
+          INPUTS_TYPO3_SCAN_IGNORE: ${{ inputs.typo3-scan-ignore }}
