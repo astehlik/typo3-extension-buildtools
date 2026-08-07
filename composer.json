@@ -37,6 +37,7 @@
 		}
 	},
 	"bin": [
+		"bin/t3_build_ext_emconf.php",
 		"bin/t3_check_codestyle.sh",
 		"bin/t3_cleanup_for_ter.sh",
 		"bin/t3_deploy_to_ter.sh",

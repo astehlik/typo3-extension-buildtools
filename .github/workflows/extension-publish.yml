@@ -51,6 +51,9 @@ jobs:
       - name: Set version in composer.json
         run: composer config version ${{ env.version }}
 
+      - name: Build ext_emconf.php
+        run: php bin/t3_build_ext_emconf.php
+
       - name: Cleanup repository for TER upload
         run: touch ready_for_release.txt && bash bin/t3_cleanup_for_ter.sh
 

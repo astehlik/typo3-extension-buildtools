@@ -61,6 +61,9 @@ cd "$distDir"
 echo "==> Setting version in composer.json"
 composer config version "$version"
 
+echo "==> Building ext_emconf.php"
+php "${THIS_SCRIPT_DIR}/t3_build_ext_emconf.php"
+
 echo "==> Cleaning up build directory for TER upload"
 touch ready_for_release.txt
 bash "${THIS_SCRIPT_DIR}/t3_cleanup_for_ter.sh"
