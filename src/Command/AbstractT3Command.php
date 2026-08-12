@@ -16,6 +16,25 @@ abstract class AbstractT3Command extends BaseCommand
     }
 
     /**
+     * Buildtools-specific settings from the consuming extension's composer.json, e.g.:
+     *
+     *   "extra": {
+     *     "typo3-extension-buildtools": {
+     *       "phpcs-ruleset": "MyCodingStandard",
+     *       "typo3scan-ignore": ["1234567890", "1234567891"]
+     *     }
+     *   }
+     *
+     * @return array<string, mixed>
+     */
+    protected function buildtoolsExtra(): array
+    {
+        $extra = $this->requireComposer()->getPackage()->getExtra()['typo3-extension-buildtools'] ?? [];
+
+        return is_array($extra) ? $extra : [];
+    }
+
+    /**
      * @return list<string>
      */
     protected function detectExtensionFiles(): array
@@ -54,16 +73,20 @@ abstract class AbstractT3Command extends BaseCommand
      * Ports the path- and ruleset-detection logic of bin/t3_check_codestyle.sh: uses the
      * "PSRDefault" ruleset from de-swebhosting/php-codestyle unless the extension ships its
      * own Tests/CodeSniffer ruleset, in which case its name defaults to "PerCodeStyleT3Ext"
-     * (the extensions' usual ruleset directory name) but can be overridden via $customRuleset.
+     * or the "phpcs-ruleset" composer.json extra setting (see buildtoolsExtra()) when given.
      */
-    protected function runCodeSniffer(bool $fix, ?string $customRuleset, OutputInterface $output): int
+    protected function runCodeSniffer(bool $fix, OutputInterface $output): int
     {
         $installedPaths = $this->vendorDir() . '/de-swebhosting/php-codestyle/PhpCodeSniffer';
         $standard = 'PSRDefault';
 
         if (is_dir('Tests/CodeSniffer')) {
             $installedPaths .= ',' . getcwd() . '/Tests/CodeSniffer';
-            $standard = $customRuleset === null || $customRuleset === '' ? 'PerCodeStyleT3Ext' : $customRuleset;
+
+            $configuredRuleset = $this->buildtoolsExtra()['phpcs-ruleset'] ?? null;
+            $customRuleset = is_string($configuredRuleset) && $configuredRuleset !== '' ? $configuredRuleset : null;
+
+            $standard = $customRuleset ?? 'PerCodeStyleT3Ext';
         }
 
         $configExitCode = $this->runProcess(

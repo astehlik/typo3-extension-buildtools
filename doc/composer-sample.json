@@ -37,6 +37,10 @@
 		"typo3/cms": {
 			"extension-key": "my_ext",
 			"web-dir": ".Build/Web"
+		},
+		"typo3-extension-buildtools": {
+			"phpcs-ruleset": "MyCodingStandard",
+			"typo3scan-ignore": ["1234567890", "1234567891"]
 		}
 	},
 	"scripts": {

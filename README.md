@@ -55,10 +55,10 @@ checks — tests are their own domain and are not pulled in automatically.
 | Command                                                     | What it does                                                                 |
 | ----------------------------------------------------------- | ---------------------------------------------------------------------------- |
 | `ddev composer t3:check:php:lint`                           | Lints all PHP files for syntax errors                                        |
-| `ddev composer t3:check:php:cs` / `t3:fix:php:cs [ruleset]` | Checks/fixes code style via PHP_CodeSniffer                                  |
+| `ddev composer t3:check:php:cs` / `t3:fix:php:cs`           | Checks/fixes code style via PHP_CodeSniffer                                  |
 | `ddev composer t3:check:php:cgl` / `t3:fix:php:cgl`         | Checks/fixes code style via PHP-CS-Fixer                                     |
 | `ddev composer t3:check:php:stan`                           | Runs PHPStan                                                                 |
-| `ddev composer t3:check:php:scan [--ignore=...]`            | Scans for deprecated/breaking code via typo3scan                             |
+| `ddev composer t3:check:php:scan`                           | Scans for deprecated/breaking code via typo3scan                             |
 | `ddev composer t3:check:php`                                | Runs all `t3:check:php:*` commands                                           |
 | `ddev composer t3:fix:php`                                  | Runs all `t3:fix:php:*` commands                                             |
 | `ddev composer t3:check:tests:unit`                         | Runs the PHPUnit unit test suite                                             |
@@ -69,8 +69,11 @@ checks — tests are their own domain and are not pulled in automatically.
 
 `t3:check:php:cs` / `t3:fix:php:cs` use the `PSRDefault` ruleset from `de-swebhosting/php-codestyle`
 unless the extension has its own `Tests/CodeSniffer/<Name>/ruleset.xml`, in which case `<Name>`
-defaults to `PerCodeStyleT3Ext` or can be passed explicitly as the first argument, e.g.
-`ddev composer t3:check:php:cs MyCodingStandard`.
+defaults to `PerCodeStyleT3Ext` or can be set via the `phpcs-ruleset` composer.json extra setting
+(see [doc/composer-sample.json](doc/composer-sample.json)).
+
+`t3:check:php:scan` skips typo3scan issue numbers listed in the `typo3scan-ignore` composer.json
+extra setting (see [doc/composer-sample.json](doc/composer-sample.json)).
 
 `t3:check:tests:functional` defaults the TYPO3 testing-framework database environment variables
 (`typo3DatabaseHost=db`, `typo3DatabaseUsername=root`, `typo3DatabasePassword=root`, ...) to
