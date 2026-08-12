@@ -101,7 +101,16 @@ abstract class AbstractT3Command extends BaseCommand
         $command = [$this->binPath($fix ? 'phpcbf' : 'phpcs'), '--standard=' . $standard];
         array_push($command, ...$this->detectStandardDirectories(), ...$this->detectExtensionFiles());
 
-        return $this->runProcess($command, $output);
+        $exitCode = $this->runProcess($command, $output);
+
+        // phpcbf exits 1 to signal that it successfully applied fixes (0 = nothing to fix,
+        // 2 = fixing failed for some files, 3 = general script execution failure) - that's a
+        // success for the fix command, not a failure, and must not abort t3:fix(:php) chains.
+        if ($fix && $exitCode === 1) {
+            return self::SUCCESS;
+        }
+
+        return $exitCode;
     }
 
     /**
