@@ -5,5 +5,12 @@
     ":semanticCommits",
     "helpers:pinGitHubActionDigests"
   ],
-  "constraintsFiltering": "strict"
+  "constraintsFiltering": "strict",
+  "packageRules": [
+    {
+      "matchManagers": ["github-actions"],
+      "matchPackageNames": ["astehlik/typo3-extension-buildtools"],
+      "enabled": false
+    }
+  ]
 }
