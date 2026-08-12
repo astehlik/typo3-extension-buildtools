@@ -19,11 +19,6 @@ on:
         required: false
         default: '["8.2", "8.3", "8.4", "8.5"]'
         type: string
-      typo3-scan-ignore:
-        description: 'Ignore paths for typo3scan'
-        required: false
-        default: ''
-        type: string
     secrets:
       CC_TEST_REPORTER_ID:
         description: 'Code Climate Test Reporter ID'
@@ -40,7 +35,7 @@ jobs:
       - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14 # zizmor: ignore[unpinned-uses] intentionally tracks this branch so consumers get composer-action updates automatically
         with:
           php_version: '${{ inputs.php-version-main }}'
-      - run: composer validate
+      - run: composer t3:check:composer:validate
 
   'composer-normalize':
     name: 'Composer normalize'
@@ -52,7 +47,7 @@ jobs:
       - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14 # zizmor: ignore[unpinned-uses] intentionally tracks this branch so consumers get composer-action updates automatically
         with:
           php_version: '${{ inputs.php-version-main }}'
-      - run: composer normalize --dry-run --diff
+      - run: composer t3:check:composer:normalize
 
   'check-codestyle-codesniffer':
     name: 'PHP_CodeSniffer check'
@@ -64,11 +59,7 @@ jobs:
       - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14 # zizmor: ignore[unpinned-uses] intentionally tracks this branch so consumers get composer-action updates automatically
         with:
           php_version: '${{ inputs.php-version-main }}'
-      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
-        with:
-          php-version: '${{ inputs.php-version-main }}'
-      - run: |
-          bash bin/t3_check_codestyle.sh PerCodeStyleT3Ext
+      - run: composer t3:check:php:cs
 
   'check-codestyle-php-cs-fixer':
     name: 'PHP CS Fixer check'
@@ -80,10 +71,7 @@ jobs:
       - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14 # zizmor: ignore[unpinned-uses] intentionally tracks this branch so consumers get composer-action updates automatically
         with:
           php_version: '${{ inputs.php-version-min }}'
-      - run: |
-          bash bin/t3_run_tests.sh -s cgl -n -p ${INPUTS_PHP_VERSION_MIN}
-        env:
-          INPUTS_PHP_VERSION_MIN: ${{ inputs.php-version-min }}
+      - run: composer t3:check:php:cgl
 
   'php-unit-tests':
     name: 'PHP Unit tests'
@@ -195,15 +183,5 @@ jobs:
       - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14 # zizmor: ignore[unpinned-uses] intentionally tracks this branch so consumers get composer-action updates automatically
         with:
           php_version: '${{ inputs.php-version-main }}'
-      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
-        with:
-          php-version: '${{ inputs.php-version-main }}'
       - run: rm -Rf var
-      - run: |
-          if [ -n "${INPUTS_TYPO3_SCAN_IGNORE}" ]; then
-            php bin/typo3scan scan --ignore "${INPUTS_TYPO3_SCAN_IGNORE}" .
-          else
-            php bin/typo3scan scan .
-          fi
-        env:
-          INPUTS_TYPO3_SCAN_IGNORE: ${{ inputs.typo3-scan-ignore }}
+      - run: composer t3:check:php:scan
