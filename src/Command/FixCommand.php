@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace De\SWebhosting\Buildtools\Command;
 
-use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -23,13 +22,6 @@ final class FixCommand extends AbstractT3Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        foreach (self::STEPS as $step) {
-            $exitCode = $this->getApplication()->find($step)->run(new ArrayInput([]), $output);
-            if ($exitCode !== self::SUCCESS) {
-                return $exitCode;
-            }
-        }
-
-        return self::SUCCESS;
+        return $this->runSteps(self::STEPS, $input, $output);
     }
 }

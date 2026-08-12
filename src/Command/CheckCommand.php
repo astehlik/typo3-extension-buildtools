@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace De\SWebhosting\Buildtools\Command;
 
-use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -23,18 +23,17 @@ final class CheckCommand extends AbstractT3Command
     protected function configure(): void
     {
         $this->setName('t3:check')
-            ->setDescription('Runs all static t3:check:* domain commands (composer, php).');
+            ->setDescription('Runs all static t3:check:* domain commands (composer, php, typo3).')
+            ->addOption(
+                'force',
+                'f',
+                InputOption::VALUE_NONE,
+                'Forwarded to steps that support it (e.g. skips the "var" removal confirmation for t3:check:typo3:scan)',
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        foreach (self::STEPS as $step) {
-            $exitCode = $this->getApplication()->find($step)->run(new ArrayInput([]), $output);
-            if ($exitCode !== self::SUCCESS) {
-                return $exitCode;
-            }
-        }
-
-        return self::SUCCESS;
+        return $this->runSteps(self::STEPS, $input, $output);
     }
 }

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace De\SWebhosting\Buildtools\Command;
 
 use Composer\Command\BaseCommand;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
 
@@ -126,6 +128,39 @@ abstract class AbstractT3Command extends BaseCommand
         });
 
         return $process->getExitCode() ?? self::FAILURE;
+    }
+
+    /**
+     * Runs each of $steps as a sub-command. All steps always run, even after an earlier one
+     * failed, so a single invocation surfaces every problem at once instead of stopping at
+     * the first failure; the result is SUCCESS only if every step succeeded. The "force"
+     * option is forwarded from $input to any step whose own definition declares it (currently
+     * only t3:check:typo3:scan, to skip its "var" removal confirmation), so aggregate
+     * commands like t3:check don't need to know which of their steps need it.
+     *
+     * @param list<string> $steps
+     */
+    protected function runSteps(array $steps, InputInterface $input, OutputInterface $output): int
+    {
+        $overallExitCode = self::SUCCESS;
+
+        foreach ($steps as $step) {
+            $output->writeln(sprintf('<info>Running %s</info>', $step));
+
+            $command = $this->getApplication()->find($step);
+
+            $args = [];
+            if ($input->hasOption('force') && $input->getOption('force') && $command->getDefinition()->hasOption('force')) {
+                $args['--force'] = true;
+            }
+
+            $exitCode = $command->run(new ArrayInput($args), $output);
+            if ($exitCode !== self::SUCCESS) {
+                $overallExitCode = self::FAILURE;
+            }
+        }
+
+        return $overallExitCode;
     }
 
     /**
