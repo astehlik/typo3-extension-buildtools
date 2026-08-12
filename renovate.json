@@ -4,5 +4,6 @@
     "config:recommended",
     ":semanticCommits",
     "helpers:pinGitHubActionDigests"
-  ]
+  ],
+  "constraintsFiltering": "strict"
 }
