@@ -52,20 +52,23 @@ prefix, with a domain-level aggregate (`t3:check:php`, mirroring tea's `check:ph
 top-level aggregate (`t3:check`, mirroring tea's `check:static`) that only covers static
 checks — tests are their own domain and are not pulled in automatically.
 
-| Command                                                     | What it does                                                                 |
-| ----------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `ddev composer t3:check:php:lint`                           | Lints all PHP files for syntax errors                                        |
-| `ddev composer t3:check:php:cs` / `t3:fix:php:cs`           | Checks/fixes code style via PHP_CodeSniffer                                  |
-| `ddev composer t3:check:php:cgl` / `t3:fix:php:cgl`         | Checks/fixes code style via PHP-CS-Fixer                                     |
-| `ddev composer t3:check:php:stan`                           | Runs PHPStan                                                                 |
-| `ddev composer t3:check:php:scan`                           | Scans for deprecated/breaking code via typo3scan                             |
-| `ddev composer t3:check:php`                                | Runs all `t3:check:php:*` commands                                           |
-| `ddev composer t3:fix:php`                                  | Runs all `t3:fix:php:*` commands                                             |
-| `ddev composer t3:check:tests:unit`                         | Runs the PHPUnit unit test suite                                             |
-| `ddev composer t3:check:tests:functional`                   | Runs the PHPUnit functional test suite against ddev's `db` service           |
-| `ddev composer t3:check:tests`                              | Runs all `t3:check:tests:*` commands                                         |
-| `ddev composer t3:check`                                    | Runs all static `t3:check:*` domain commands (currently just `t3:check:php`) |
-| `ddev composer t3:fix`                                      | Runs all `t3:fix:*` domain commands (currently just `t3:fix:php`)            |
+| Command                                                                   | What it does                                                       |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `ddev composer t3:check:composer:validate`                                | Validates composer.json/composer.lock via `composer validate`      |
+| `ddev composer t3:check:composer:normalize` / `t3:fix:composer:normalize` | Checks/fixes composer.json normalization via `composer normalize`  |
+| `ddev composer t3:check:composer`                                         | Runs all `t3:check:composer:*` commands                            |
+| `ddev composer t3:check:php:lint`                                         | Lints all PHP files for syntax errors                              |
+| `ddev composer t3:check:php:cs` / `t3:fix:php:cs`                         | Checks/fixes code style via PHP_CodeSniffer                        |
+| `ddev composer t3:check:php:cgl` / `t3:fix:php:cgl`                       | Checks/fixes code style via PHP-CS-Fixer                           |
+| `ddev composer t3:check:php:stan`                                         | Runs PHPStan                                                       |
+| `ddev composer t3:check:php:scan`                                         | Scans for deprecated/breaking code via typo3scan                   |
+| `ddev composer t3:check:php`                                              | Runs all `t3:check:php:*` commands                                 |
+| `ddev composer t3:fix:php`                                                | Runs all `t3:fix:php:*` commands                                   |
+| `ddev composer t3:check:tests:unit`                                       | Runs the PHPUnit unit test suite                                   |
+| `ddev composer t3:check:tests:functional`                                 | Runs the PHPUnit functional test suite against ddev's `db` service |
+| `ddev composer t3:check:tests`                                            | Runs all `t3:check:tests:*` commands                               |
+| `ddev composer t3:check`                                                  | Runs all static `t3:check:*` domain commands (composer, php)       |
+| `ddev composer t3:fix`                                                    | Runs all `t3:fix:*` domain commands (composer, php)                |
 
 `t3:check:php:cs` / `t3:fix:php:cs` use the `PSRDefault` ruleset from `de-swebhosting/php-codestyle`
 unless the extension has its own `Tests/CodeSniffer/<Name>/ruleset.xml`, in which case `<Name>`

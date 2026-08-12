@@ -11,13 +11,14 @@ use Symfony\Component\Console\Output\OutputInterface;
 final class FixCommand extends AbstractT3Command
 {
     private const STEPS = [
+        't3:fix:composer:normalize',
         't3:fix:php',
     ];
 
     protected function configure(): void
     {
         $this->setName('t3:fix')
-            ->setDescription('Runs all t3:fix:* domain commands (currently just php).');
+            ->setDescription('Runs all t3:fix:* domain commands (composer, php).');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
