@@ -52,5 +52,43 @@
 			"typo3/class-alias-loader": true,
 			"typo3/cms-composer-installers": true
 		}
+	},
+	"scripts": {
+		"check": [
+			"@check:php:cgl",
+			"@check:composer",
+			"@check:prettier"
+		],
+		"check:composer": [
+			"@composer validate",
+			"@composer normalize --dry-run --diff"
+		],
+		"check:php:cgl": [
+			"@putenv XDEBUG_MODE=off",
+			"php-cs-fixer fix --dry-run --diff --config=build/php-cs-fixer/config.php"
+		],
+		"check:prettier": "npx prettier --check .",
+		"ci": [
+			"@check"
+		],
+		"fix": [
+			"@fix:php:cgl",
+			"@fix:prettier"
+		],
+		"fix:php:cgl": [
+			"@putenv XDEBUG_MODE=off",
+			"php-cs-fixer fix --config=build/php-cs-fixer/config.php"
+		],
+		"fix:prettier": "npx prettier --write ."
+	},
+	"scripts-descriptions": {
+		"check": "Runs check:php:cgl, check:composer and check:prettier.",
+		"check:composer": "Validates and checks normalization of composer.json.",
+		"check:php:cgl": "Checks PHP coding guidelines using PHP-CS-Fixer.",
+		"check:prettier": "Checks formatting using Prettier.",
+		"ci": "Runs all checks identical to the self-lint pipeline.",
+		"fix": "Runs fix:php:cgl and fix:prettier.",
+		"fix:php:cgl": "Fixes PHP coding guidelines using PHP-CS-Fixer.",
+		"fix:prettier": "Fixes formatting using Prettier."
 	}
 }
