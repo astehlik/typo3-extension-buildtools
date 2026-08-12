@@ -52,31 +52,42 @@ prefix, with a domain-level aggregate (`t3:check:php`, mirroring tea's `check:ph
 top-level aggregate (`t3:check`, mirroring tea's `check:static`) that only covers static
 checks — tests are their own domain and are not pulled in automatically.
 
-| Command                                                                   | What it does                                                       |
-| ------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| `ddev composer t3:check:composer:validate`                                | Validates composer.json/composer.lock via `composer validate`      |
-| `ddev composer t3:check:composer:normalize` / `t3:fix:composer:normalize` | Checks/fixes composer.json normalization via `composer normalize`  |
-| `ddev composer t3:check:composer`                                         | Runs all `t3:check:composer:*` commands                            |
-| `ddev composer t3:check:php:lint`                                         | Lints all PHP files for syntax errors                              |
-| `ddev composer t3:check:php:cs` / `t3:fix:php:cs`                         | Checks/fixes code style via PHP_CodeSniffer                        |
-| `ddev composer t3:check:php:cgl` / `t3:fix:php:cgl`                       | Checks/fixes code style via PHP-CS-Fixer                           |
-| `ddev composer t3:check:php:stan`                                         | Runs PHPStan                                                       |
-| `ddev composer t3:check:php:scan`                                         | Scans for deprecated/breaking code via typo3scan                   |
-| `ddev composer t3:check:php`                                              | Runs all `t3:check:php:*` commands                                 |
-| `ddev composer t3:fix:php`                                                | Runs all `t3:fix:php:*` commands                                   |
-| `ddev composer t3:check:tests:unit`                                       | Runs the PHPUnit unit test suite                                   |
-| `ddev composer t3:check:tests:functional`                                 | Runs the PHPUnit functional test suite against ddev's `db` service |
-| `ddev composer t3:check:tests`                                            | Runs all `t3:check:tests:*` commands                               |
-| `ddev composer t3:check`                                                  | Runs all static `t3:check:*` domain commands (composer, php)       |
-| `ddev composer t3:fix`                                                    | Runs all `t3:fix:*` domain commands (composer, php)                |
+| Command                                                                   | What it does                                                        |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `ddev composer t3:check:composer:validate`                                | Validates composer.json/composer.lock via `composer validate`       |
+| `ddev composer t3:check:composer:normalize` / `t3:fix:composer:normalize` | Checks/fixes composer.json normalization via `composer normalize`   |
+| `ddev composer t3:check:composer`                                         | Runs all `t3:check:composer:*` commands                             |
+| `ddev composer t3:check:php:lint`                                         | Lints all PHP files for syntax errors                               |
+| `ddev composer t3:check:php:cs` / `t3:fix:php:cs`                         | Checks/fixes code style via PHP_CodeSniffer                         |
+| `ddev composer t3:check:php:cgl` / `t3:fix:php:cgl`                       | Checks/fixes code style via PHP-CS-Fixer                            |
+| `ddev composer t3:check:php:stan`                                         | Runs PHPStan                                                        |
+| `ddev composer t3:check:php`                                              | Runs all `t3:check:php:*` commands                                  |
+| `ddev composer t3:fix:php`                                                | Runs all `t3:fix:php:*` commands                                    |
+| `ddev composer t3:check:typo3:scan`                                       | Scans for deprecated/breaking TYPO3 core usage via typo3scan        |
+| `ddev composer t3:check:tests:unit`                                       | Runs the PHPUnit unit test suite                                    |
+| `ddev composer t3:check:tests:functional`                                 | Runs the PHPUnit functional test suite against ddev's `db` service  |
+| `ddev composer t3:check:tests`                                            | Runs all `t3:check:tests:*` commands                                |
+| `ddev composer t3:check`                                                  | Runs all static `t3:check:*` domain commands (composer, php, typo3) |
+| `ddev composer t3:fix`                                                    | Runs all `t3:fix:*` domain commands (composer, php)                 |
 
 `t3:check:php:cs` / `t3:fix:php:cs` use the `PSRDefault` ruleset from `de-swebhosting/php-codestyle`
 unless the extension has its own `Tests/CodeSniffer/<Name>/ruleset.xml`, in which case `<Name>`
 defaults to `PerCodeStyleT3Ext` or can be set via the `phpcs-ruleset` composer.json extra setting
 (see [doc/composer-sample.json](doc/composer-sample.json)).
 
-`t3:check:php:scan` skips typo3scan issue numbers listed in the `typo3scan-ignore` composer.json
-extra setting (see [doc/composer-sample.json](doc/composer-sample.json)).
+`t3:check:typo3:scan` requires `m12r/typo3scan` (a `repositories` entry plus a `require-dev`
+entry, see [doc/composer-sample.json](doc/composer-sample.json) — it isn't a proper Packagist
+package, hence the custom `"package"` repository) and skips issue numbers listed in the
+`typo3scan-ignore` composer.json extra setting (see [doc/composer-sample.json](doc/composer-sample.json)).
+It always removes the `var` directory before scanning, since typo3scan has no way to exclude
+directories and would otherwise report false positives from cached/generated code. Since this
+deletes local files, it asks for confirmation first — pass `--force` to skip the prompt (required
+in non-interactive terminals such as CI, where there is no one to confirm). `t3:check --force`
+forwards `--force` on to the scan step.
+
+Aggregate commands (`t3:check`, `t3:check:php`, `t3:check:composer`, `t3:check:tests`, `t3:fix`,
+`t3:fix:php`) always run every step, even after an earlier one failed, so a single invocation
+surfaces every problem at once; the overall command only reports success if every step did.
 
 `t3:check:tests:functional` defaults the TYPO3 testing-framework database environment variables
 (`typo3DatabaseHost=db`, `typo3DatabaseUsername=root`, `typo3DatabasePassword=root`, ...) to

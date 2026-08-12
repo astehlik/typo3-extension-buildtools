@@ -15,13 +15,12 @@ final class CheckPhpCommand extends AbstractT3Command
         't3:check:php:cs',
         't3:check:php:cgl',
         't3:check:php:stan',
-        't3:check:php:scan',
     ];
 
     protected function configure(): void
     {
         $this->setName('t3:check:php')
-            ->setDescription('Runs all t3:check:php:* commands (lint, cs, cgl, stan, scan).');
+            ->setDescription('Runs all t3:check:php:* commands (lint, cs, cgl, stan).');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

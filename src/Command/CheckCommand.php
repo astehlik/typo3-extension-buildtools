@@ -17,6 +17,7 @@ final class CheckCommand extends AbstractT3Command
     private const STEPS = [
         't3:check:composer',
         't3:check:php',
+        't3:check:typo3:scan',
     ];
 
     protected function configure(): void

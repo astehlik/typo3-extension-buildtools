@@ -183,5 +183,4 @@ jobs:
       - uses: astehlik/typo3-extension-buildtools/actions/composer@TYPO3_14 # zizmor: ignore[unpinned-uses] intentionally tracks this branch so consumers get composer-action updates automatically
         with:
           php_version: '${{ inputs.php-version-main }}'
-      - run: rm -Rf var
-      - run: composer t3:check:php:scan
+      - run: composer t3:check:typo3:scan --force

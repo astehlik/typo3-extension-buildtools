@@ -13,11 +13,11 @@ use De\SWebhosting\Buildtools\Command\CheckPhpCglCommand;
 use De\SWebhosting\Buildtools\Command\CheckPhpCommand;
 use De\SWebhosting\Buildtools\Command\CheckPhpCsCommand;
 use De\SWebhosting\Buildtools\Command\CheckPhpLintCommand;
-use De\SWebhosting\Buildtools\Command\CheckPhpScanCommand;
 use De\SWebhosting\Buildtools\Command\CheckPhpStanCommand;
 use De\SWebhosting\Buildtools\Command\CheckTestsCommand;
 use De\SWebhosting\Buildtools\Command\CheckTestsFunctionalCommand;
 use De\SWebhosting\Buildtools\Command\CheckTestsUnitCommand;
+use De\SWebhosting\Buildtools\Command\CheckTypo3ScanCommand;
 use De\SWebhosting\Buildtools\Command\FixCommand;
 use De\SWebhosting\Buildtools\Command\FixComposerNormalizeCommand;
 use De\SWebhosting\Buildtools\Command\FixPhpCglCommand;
@@ -39,9 +39,9 @@ final class CommandProvider implements CommandProviderCapability
             new CheckPhpCglCommand(),
             new FixPhpCglCommand(),
             new CheckPhpStanCommand(),
-            new CheckPhpScanCommand(),
             new CheckPhpCommand(),
             new FixPhpCommand(),
+            new CheckTypo3ScanCommand(),
             new CheckTestsUnitCommand(),
             new CheckTestsFunctionalCommand(),
             new CheckTestsCommand(),
