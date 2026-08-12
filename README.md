@@ -69,7 +69,8 @@ checks — tests are their own domain and are not pulled in automatically.
 
 `t3:check:php:cs` / `t3:fix:php:cs` use the `PSRDefault` ruleset from `de-swebhosting/php-codestyle`
 unless the extension has its own `Tests/CodeSniffer/<Name>/ruleset.xml`, in which case `<Name>`
-must be passed as the first argument, e.g. `ddev composer t3:check:php:cs MyCodingStandard`.
+defaults to `PerCodeStyleT3Ext` or can be passed explicitly as the first argument, e.g.
+`ddev composer t3:check:php:cs MyCodingStandard`.
 
 `t3:check:tests:functional` defaults the TYPO3 testing-framework database environment variables
 (`typo3DatabaseHost=db`, `typo3DatabaseUsername=root`, `typo3DatabasePassword=root`, ...) to

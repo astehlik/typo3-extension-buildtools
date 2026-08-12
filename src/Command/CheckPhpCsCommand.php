@@ -17,7 +17,7 @@ final class CheckPhpCsCommand extends AbstractT3Command
             ->addArgument(
                 'ruleset',
                 InputArgument::OPTIONAL,
-                'Name of a custom ruleset in Tests/CodeSniffer, required if that directory exists',
+                'Name of a custom ruleset in Tests/CodeSniffer, defaults to "PerCodeStyleT3Ext" if that directory exists',
             );
     }
 

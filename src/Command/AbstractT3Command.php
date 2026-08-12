@@ -53,7 +53,8 @@ abstract class AbstractT3Command extends BaseCommand
     /**
      * Ports the path- and ruleset-detection logic of bin/t3_check_codestyle.sh: uses the
      * "PSRDefault" ruleset from de-swebhosting/php-codestyle unless the extension ships its
-     * own Tests/CodeSniffer ruleset, in which case its name must be passed as $customRuleset.
+     * own Tests/CodeSniffer ruleset, in which case its name defaults to "PerCodeStyleT3Ext"
+     * (the extensions' usual ruleset directory name) but can be overridden via $customRuleset.
      */
     protected function runCodeSniffer(bool $fix, ?string $customRuleset, OutputInterface $output): int
     {
@@ -61,14 +62,8 @@ abstract class AbstractT3Command extends BaseCommand
         $standard = 'PSRDefault';
 
         if (is_dir('Tests/CodeSniffer')) {
-            if ($customRuleset === null || $customRuleset === '') {
-                $output->writeln('<error>Name of custom ruleset must be provided (Tests/CodeSniffer exists).</error>');
-
-                return self::INVALID;
-            }
-
             $installedPaths .= ',' . getcwd() . '/Tests/CodeSniffer';
-            $standard = $customRuleset;
+            $standard = $customRuleset === null || $customRuleset === '' ? 'PerCodeStyleT3Ext' : $customRuleset;
         }
 
         $configExitCode = $this->runProcess(
