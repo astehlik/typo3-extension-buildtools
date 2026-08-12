@@ -15,7 +15,6 @@
 		"michielroos/typo3scan": "^1.7",
 		"phpstan/phpstan": "^2.1.50",
 		"phpstan/phpstan-phpunit": "^2.0.16",
-		"phpunit/phpunit": "^11.5.55",
 		"squizlabs/php_codesniffer": "^3.9",
 		"symfony/dom-crawler": "^6.3",
 		"typo3/cms-backend": "^14.0",
@@ -28,7 +27,8 @@
 		"typo3/testing-framework": "^9.5"
 	},
 	"require-dev": {
-		"composer/composer": "^2.9.7"
+		"composer/composer": "^2.9.7",
+		"phpunit/phpunit": "^11.2.5"
 	},
 	"autoload": {
 		"psr-4": {
