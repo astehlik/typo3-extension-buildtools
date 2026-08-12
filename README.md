@@ -36,15 +36,57 @@ For TYPO3 9:
 composer require --dev de-swebhosting/typo3-extension-buildtools:dev-TYPO3_9
 ```
 
-## Run locally
+## Run locally with ddev
 
-Before you can execute a script locally, you need to set your Extension key as an environment variable:
+Once the package is required, buildtools registers a set of `composer t3:*` commands
+that run directly against your ddev project's own PHP and database services — no Docker
+orchestration, no multi-version matrix. This is the fastest way to run checks and tests
+while developing inside `ddev ssh` / `ddev exec`.
+
+Requires adding `"de-swebhosting/typo3-extension-buildtools": true` to `config.allow-plugins`,
+see [doc/composer-sample.json](doc/composer-sample.json).
+
+Naming follows the same `check:<domain>:<tool>` / `fix:<domain>:<tool>` scheme as the
+[tea](https://github.com/TYPO3BestPractices/tea) extension's `composer.json`, under a `t3:`
+prefix, with a domain-level aggregate (`t3:check:php`, mirroring tea's `check:php`) and a
+top-level aggregate (`t3:check`, mirroring tea's `check:static`) that only covers static
+checks — tests are their own domain and are not pulled in automatically.
+
+| Command                                                     | What it does                                                                 |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `ddev composer t3:check:php:lint`                           | Lints all PHP files for syntax errors                                        |
+| `ddev composer t3:check:php:cs` / `t3:fix:php:cs [ruleset]` | Checks/fixes code style via PHP_CodeSniffer                                  |
+| `ddev composer t3:check:php:cgl` / `t3:fix:php:cgl`         | Checks/fixes code style via PHP-CS-Fixer                                     |
+| `ddev composer t3:check:php:stan`                           | Runs PHPStan                                                                 |
+| `ddev composer t3:check:php:scan [--ignore=...]`            | Scans for deprecated/breaking code via typo3scan                             |
+| `ddev composer t3:check:php`                                | Runs all `t3:check:php:*` commands                                           |
+| `ddev composer t3:fix:php`                                  | Runs all `t3:fix:php:*` commands                                             |
+| `ddev composer t3:check:tests:unit`                         | Runs the PHPUnit unit test suite                                             |
+| `ddev composer t3:check:tests:functional`                   | Runs the PHPUnit functional test suite against ddev's `db` service           |
+| `ddev composer t3:check:tests`                              | Runs all `t3:check:tests:*` commands                                         |
+| `ddev composer t3:check`                                    | Runs all static `t3:check:*` domain commands (currently just `t3:check:php`) |
+| `ddev composer t3:fix`                                      | Runs all `t3:fix:*` domain commands (currently just `t3:fix:php`)            |
+
+`t3:check:php:cs` / `t3:fix:php:cs` use the `PSRDefault` ruleset from `de-swebhosting/php-codestyle`
+unless the extension has its own `Tests/CodeSniffer/<Name>/ruleset.xml`, in which case `<Name>`
+must be passed as the first argument, e.g. `ddev composer t3:check:php:cs MyCodingStandard`.
+
+`t3:check:tests:functional` defaults the TYPO3 testing-framework database environment variables
+(`typo3DatabaseHost=db`, `typo3DatabaseUsername=root`, `typo3DatabasePassword=root`, ...) to
+match ddev's own `db` service, so no extra setup is needed — set the corresponding env vars
+yourself to override.
+
+## Run without ddev / in CI
+
+Before you can execute a script directly, you need to set your Extension key as an
+environment variable:
 
 ```bash
 export TYPO3_EXTENSION_KEY="<my_extension_key>"
 ```
 
-After that you can run the different commands.
+After that you can run the different commands. These are what CI uses under the hood,
+and cover the full PHP/database version matrix via Docker/Podman:
 
 - `t3_run_tests.sh` - For running Unit, Functional and Acceptance tests
 - `t3_check_codestyle.sh` - For checking / fixing PHP code style via

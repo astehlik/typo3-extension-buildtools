@@ -1,0 +1,44 @@
+<?php
+
+declare(strict_types=1);
+
+namespace De\SWebhosting\Buildtools;
+
+use Composer\Plugin\Capability\CommandProvider as CommandProviderCapability;
+use De\SWebhosting\Buildtools\Command\CheckCommand;
+use De\SWebhosting\Buildtools\Command\CheckPhpCglCommand;
+use De\SWebhosting\Buildtools\Command\CheckPhpCommand;
+use De\SWebhosting\Buildtools\Command\CheckPhpCsCommand;
+use De\SWebhosting\Buildtools\Command\CheckPhpLintCommand;
+use De\SWebhosting\Buildtools\Command\CheckPhpScanCommand;
+use De\SWebhosting\Buildtools\Command\CheckPhpStanCommand;
+use De\SWebhosting\Buildtools\Command\CheckTestsCommand;
+use De\SWebhosting\Buildtools\Command\CheckTestsFunctionalCommand;
+use De\SWebhosting\Buildtools\Command\CheckTestsUnitCommand;
+use De\SWebhosting\Buildtools\Command\FixCommand;
+use De\SWebhosting\Buildtools\Command\FixPhpCglCommand;
+use De\SWebhosting\Buildtools\Command\FixPhpCommand;
+use De\SWebhosting\Buildtools\Command\FixPhpCsCommand;
+
+final class CommandProvider implements CommandProviderCapability
+{
+    public function getCommands(): array
+    {
+        return [
+            new CheckPhpLintCommand(),
+            new CheckPhpCsCommand(),
+            new FixPhpCsCommand(),
+            new CheckPhpCglCommand(),
+            new FixPhpCglCommand(),
+            new CheckPhpStanCommand(),
+            new CheckPhpScanCommand(),
+            new CheckPhpCommand(),
+            new FixPhpCommand(),
+            new CheckTestsUnitCommand(),
+            new CheckTestsFunctionalCommand(),
+            new CheckTestsCommand(),
+            new CheckCommand(),
+            new FixCommand(),
+        ];
+    }
+}

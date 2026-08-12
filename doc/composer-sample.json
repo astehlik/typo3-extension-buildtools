@@ -22,6 +22,7 @@
 	},
 	"config": {
 		"allow-plugins": {
+			"de-swebhosting/typo3-extension-buildtools": true,
 			"ergebnis/composer-normalize": true,
 			"typo3/class-alias-loader": true,
 			"typo3/cms-composer-installers": true

@@ -2,9 +2,10 @@
 	"name": "de-swebhosting/typo3-extension-buildtools",
 	"description": "Contains scripts to test and release TYPO3 Extensions",
 	"license": "GPL-3.0-or-later",
-	"type": "library",
+	"type": "composer-plugin",
 	"require": {
 		"php": "^8.2",
+		"composer-plugin-api": "^2.0",
 		"bnf/phpstan-psr-container": "^1.1.0",
 		"codeception/codeception": "^5.3.5",
 		"codeception/module-asserts": "^3.3.0",
@@ -52,6 +53,9 @@
 			"typo3/class-alias-loader": true,
 			"typo3/cms-composer-installers": true
 		}
+	},
+	"extra": {
+		"class": "De\\SWebhosting\\Buildtools\\Plugin"
 	},
 	"scripts": {
 		"check": [
